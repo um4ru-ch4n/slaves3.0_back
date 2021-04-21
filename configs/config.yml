@@ -1,0 +1,7 @@
+router:
+    port: ":8083"
+
+db:
+    port: ":5432"
+    dbname: "slaves"
+    sslmode: "disable"
