@@ -2,71 +2,77 @@ package domain
 
 import (
 	"time"
-
-	_ "github.com/go-pg/pg/v10"
 )
 
 type UserType struct {
-	Id   int32 `pg:"id,pk"`
+	Id   int32
 	Name string
 }
 
 type Fetter struct {
-	Id       int32  `pg:"id,pk"`
-	Name     string `pg:"type:varchar(255),unique"`
+	Id       int32
+	Name     string
 	Price    int32
-	Time     time.Time `pg:"type:timestamp"`
-	Cooldown time.Time `pg:"type:timestamp"`
+	Duration int32
+	Cooldown int32
 }
 
 type SlaveLevel struct {
-	Id              int32 `pg:"id,pk"`
-	Lvl             int32 `pg:",unique"`
-	Profit          int32
-	Money_to_update int64 `pg:"type:bigint"`
+	Id            int32
+	Lvl           int32
+	Profit        int32
+	MoneyToUpdate int64
 }
 
 type SlaveStats struct {
-	Id             int32       `pg:"id,pk"`
-	Level          *SlaveLevel `pg:"rel:has-one"`
-	Money_quantity int64       `pg:"type:bigint"`
+	Id            int32
+	Level         *SlaveLevel
+	MoneyQuantity int64
 }
 
 type DefenderLevel struct {
-	Id               int32 `pg:"id,pk"`
-	Lvl              int32 `pg:",unique"`
-	Hp               int32
-	Damage           int32
-	Damage_to_update int64 `pg:"type:bigint"`
+	Id             int32
+	Lvl            int32
+	Hp             int32
+	Damage         int32
+	DamageToUpdate int64
 }
 
 type DefenderStats struct {
-	Id              int32          `pg:"id,pk"`
-	Level           *DefenderLevel `pg:"rel:has-one"`
-	Damage_quantity int64          `pg:"type:bigint"`
+	Id             int32
+	Level          *DefenderLevel
+	DamageQuantity int64
 }
 
 type User struct {
-	Id                    int32 `pg:"id,pk"`
-	Slaves_count          int32
-	Balance               int64          `pg:"type:bigint"`
-	Income                int64          `pg:"type:bigint"`
-	Last_update           time.Time      `pg:"type:timestamp"`
-	Job_name              string         `pg:"type:varchar(255)"`
-	User_type             *UserType      `pg:"rel:has-one"`
-	Slave_stats           *SlaveStats    `pg:"rel:has-one"`
-	Defender_stats        *DefenderStats `pg:"rel:has-one"`
-	Purchase_price_silver int64          `pg:"type:bigint"`
-	Sale_price_silver     int64          `pg:"type:bigint"`
-	Purchase_price_gold   int32
-	Sale_price_gold       int32
-	Has_fetter            bool
-	Fetter_time           time.Time `pg:"type:timestamp"`
-	Fetter_type           *Fetter   `pg:"rel:has-one"`
-	Slaves                []User    `pg:"-"`
+	Id              int32
+	SlavesCount     int32
+	Balance         int64
+	Income          int64
+	LastUpdate      time.Time
+	JobName         string
+	UserType        *UserType
+	SlaveStats      *SlaveStats
+	DefenderStats   *DefenderStats
+	PurchasePriceSm int64
+	SalePriceSm     int64
+	PurchasePriceGm int32
+	SalePriceGm     int32
+	HasFetter       bool
+	FetterTime      time.Time
+	FetterType      *Fetter
 }
 
 type Slaves struct {
-	User_id   *User `pg:"fk:id,unique"`
-	Master_id *User `pg:"fk:id"`
+	UserId   *User
+	MasterId *User
+}
+
+type UserVkInfo struct {
+	Id        int32
+	FirstName string
+	LastName  string
+	IsClosed  bool
+	Username  string
+	Photo     string
 }

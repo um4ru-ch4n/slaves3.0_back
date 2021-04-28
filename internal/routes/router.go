@@ -18,7 +18,7 @@ func NewRouter(services *service.Service) *Router {
 func (r *Router) InitRoutes() *gin.Engine {
 	router := gin.Default()
 
-	auth := router.Group("/auth")
+	auth := router.Group("/auth", r.userIdentity)
 	{
 		auth.GET("/user", r.getUser)
 	}

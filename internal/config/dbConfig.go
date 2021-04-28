@@ -8,10 +8,12 @@ import (
 )
 
 type DbConfig struct {
-	Addr     string
-	User     string
+	Host     string
+	Port     string
+	Username string
 	Password string
-	Database string
+	DbName   string
+	SSLMode  string
 }
 
 func GetDbConfig() (DbConfig, error) {
@@ -28,10 +30,12 @@ func GetDbConfig() (DbConfig, error) {
 	}
 
 	return DbConfig{
-		Addr:     viper.GetString("db.port"),
-		User:     os.Getenv("DB_USERNAME"),
-		Database: viper.GetString("db.dbname"),
+		Host:     viper.GetString("db.host"),
+		Port:     viper.GetString("db.port"),
+		Username: os.Getenv("DB_USERNAME"),
 		Password: os.Getenv("DB_PASSWORD"),
+		DbName:   viper.GetString("db.name"),
+		SSLMode:  viper.GetString("db.ssl"),
 	}, nil
 
 }
