@@ -13,7 +13,7 @@ const (
 	tokenType           = "AccessToken"
 )
 
-func (r *Router) userIdentity(c *gin.Context) {
+func (r *Router) hasAuth(c *gin.Context) {
 	header := c.GetHeader(authorizationHeader)
 	if header == "" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
@@ -37,6 +37,10 @@ func (r *Router) userIdentity(c *gin.Context) {
 		})
 		return
 	}
+}
+
+func (r *Router) userIdentity(c *gin.Context) {
+	headerParts := strings.Split(c.GetHeader(authorizationHeader), " ")
 
 	userVkInfo, err := r.services.Authorization.GetUserVkInfo(headerParts[1])
 
