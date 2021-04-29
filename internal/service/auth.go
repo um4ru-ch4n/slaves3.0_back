@@ -42,79 +42,76 @@ func (serv *AuthService) GetUserVkInfo(token string) (domain.UserVkInfo, error) 
 
 	return domain.UserVkInfo{
 		Id:        int32(us.ID),
-		FirstName: us.FirstName,
-		LastName:  us.LastName,
+		Firstname: us.FirstName,
+		Lastname:  us.LastName,
 		IsClosed:  bool(us.IsClosed),
 		Username:  us.ScreenName,
 		Photo:     us.Photo100,
 	}, nil
 }
 
-// func (serv *AuthService) createUser(user *domain.User) error {
-// 	userType := domain.UserType{Name: "default"}
-// 	err := rep.db.Model(&userType).Where("name = ?", userType.Name).Select()
+func (serv *AuthService) GetFriendsList(token string, friendId int32) ([]domain.FriendInfo, error) {
+	vk := api.NewVK(token)
 
-// 	if err != nil {
-// 		return user, err
-// 	}
+	res, err := vk.AppsGetFriendsListExtended(api.Params{
+		"fields": "screen_name, photo_100",
+	})
+	if err != nil {
+		return []domain.FriendInfo{}, err
+	}
 
-// 	slavesLevel := domain.SlaveLevel{Lvl: 0}
+	friends := make([]domain.FriendInfo, res.Count)
 
-// 	err = rep.db.Model(&slavesLevel).Where("lvl = ?", slavesLevel.Id).Select()
+	for i, fr := range res.Items {
+		frInfLoc, err := serv.GetFriendInfoLocal(friendId)
+		if err != nil {
+			return friends, err
+		}
 
-// 	if err != nil {
-// 		return user, err
-// 	}
+		if frInfLoc.MasterId != 0 {
+			res, err := vk.UsersGet(api.Params{
+				"fields":  "screen_name, photo_100",
+				"user_id": frInfLoc.MasterId,
+			})
 
-// 	slavesStats := domain.SlaveStats{
-// 		Level:          slavesLevel,
-// 		Money_quantity: 0,
-// 	}
+			if err != nil {
+				return friends, err
+			}
 
-// 	defenderLevel := domain.DefenderLevel{Lvl: 0}
+			us := res[0]
 
-// 	err = rep.db.Model(&defenderLevel).Where("lvl = ?", defenderLevel.Id).Select()
+			frInfLoc.MasterFirstname = us.FirstName
+			frInfLoc.MasterLastname = us.LastName
+		}
 
-// 	if err != nil {
-// 		return user, err
-// 	}
+		friends[i] = domain.FriendInfo{
+			Id:          int32(fr.ID),
+			Firstname:   fr.FirstName,
+			Lastname:    fr.LastName,
+			Photo:       fr.Photo100,
+			FrInfoLocal: &frInfLoc,
+		}
+	}
 
-// 	defenderStats := domain.DefenderStats{
-// 		Level:           defenderLevel,
-// 		Damage_quantity: 0,
-// 	}
+	return friends, nil
+}
 
-// 	fetterType := domain.Fetter{Name: "common"}
+func (serv *AuthService) GetFriendInfoLocal(friendId int32) (domain.FriendInfoLocal, error) {
+	frInfLoc, err := serv.rep.GetFriendInfoLocal(friendId)
 
-// 	err = rep.db.Model(&fetterType).Where("name = ?", fetterType.Name).Select()
+	if err.Error() == "no rows in result set" {
+		return domain.FriendInfoLocal{
+			MasterId:        0,
+			MasterFirstname: "",
+			MasterLastname:  "",
+			HasFetter:       false,
+			FetterType:      "common",
+			PurchasePriceSm: 20,
+			PurchasePriceGm: 0,
+			SlaveLevel:      0,
+			DefenderLevel:   0,
+		}, nil
+	}
 
-// 	if err != nil {
-// 		return user, err
-// 	}
-
-// 	user = domain.User{
-// 		Id:                    id,
-// 		Slaves_count:          0,
-// 		Balance:               100,
-// 		Income:                0,
-// 		Last_update:           time.Now(),
-// 		Job_name:              "",
-// 		User_type:             userType,
-// 		Slave_stats:           slavesStats,
-// 		Defender_stats:        defenderStats,
-// 		Purchase_price_silver: 10,
-// 		Sale_price_silver:     5,
-// 		Purchase_price_gold:   0,
-// 		Sale_price_gold:       0,
-// 		Has_fetter:            false,
-// 		Fetter_time:           time.Now(),
-// 		Fetter_type:           fetterType,
-// 		Slaves:                []domain.User{},
-// 	}
-
-// 	_, err = rep.db.Model(&user).Insert()
-
-// 	if err != nil {
-// 		return user, err
-// 	}
-// }
+	return frInfLoc, err
+}

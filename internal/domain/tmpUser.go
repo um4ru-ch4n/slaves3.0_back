@@ -70,8 +70,8 @@ package domain
 
 // type UserVkInfo struct {
 // 	Id        int32
-// 	FirstName string
-// 	LastName  string
+// 	Firstname string
+// 	Lastname  string
 // 	IsClosed  bool
 // 	Username  string
 // 	Photo     string

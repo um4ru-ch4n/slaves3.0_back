@@ -8,6 +8,8 @@ import (
 type Authorization interface {
 	CreateUser(user domain.User) error
 	GetUser(id int32) (domain.User, error)
+	GetUserType(userId int32) (string, error)
+	GetFriendInfoLocal(id int32) (domain.FriendInfoLocal, error)
 }
 
 type UserType interface {

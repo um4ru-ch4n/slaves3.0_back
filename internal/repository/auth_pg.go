@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
 	"github.com/jackc/pgx/v4"
@@ -146,7 +145,56 @@ func (rep *AuthPostgres) GetUser(id int32) (domain.User, error) {
 		&user.FetterType.Duration,
 		&user.FetterType.Cooldown)
 
-	fmt.Println(err)
-
 	return user, err
+}
+
+func (rep *AuthPostgres) GetUserType(userId int32) (string, error) {
+	var usType string
+	err := rep.db.QueryRow(context.Background(),
+		`SELECT 
+			ut.name 
+		FROM users u
+		INNER JOIN user_type ut 
+			ON ut.id = u.user_type
+		WHERE id = $1;`, userId).Scan(&usType)
+
+	return usType, err
+}
+
+func (rep *AuthPostgres) GetFriendInfoLocal(id int32) (domain.FriendInfoLocal, error) {
+	friendInfoLocal := domain.FriendInfoLocal{}
+
+	err := rep.db.QueryRow(context.Background(),
+		`SELECT 
+			s.master_id,
+			u.has_fetter,
+			f.name,
+			u.purchase_price_sm,
+			u.purchase_price_gm,
+			sl.lvl,
+			dl.lvl
+		FROM users u
+		INNER JOIN slave s
+			ON s.user_id = u.id
+		INNER JOIN slave_stats ss 
+			ON ss.id = u.slave_stats 
+		INNER JOIN slave_level sl 
+			ON sl.id = ss.level 
+		INNER JOIN defender_stats ds 
+			ON ds.id = u.defender_stats 
+		INNER JOIN defender_level dl 
+			ON dl.id = ds.level 
+		INNER JOIN fetter f 
+			ON f.id = u.fetter_type 
+		WHERE u.id = $1;`, id).Scan(
+		&friendInfoLocal.MasterId,
+		&friendInfoLocal.HasFetter,
+		&friendInfoLocal.FetterType,
+		&friendInfoLocal.PurchasePriceSm,
+		&friendInfoLocal.PurchasePriceGm,
+		&friendInfoLocal.SlaveLevel,
+		&friendInfoLocal.DefenderLevel,
+	)
+
+	return friendInfoLocal, err
 }

@@ -9,6 +9,8 @@ type Authorization interface {
 	GetUser(id int32) (domain.User, error)
 	CreateUser(user domain.User) error
 	GetUserVkInfo(token string) (domain.UserVkInfo, error)
+	GetFriendsList(token string, friendId int32) ([]domain.FriendInfo, error)
+	GetFriendInfoLocal(friendId int32) (domain.FriendInfoLocal, error)
 }
 
 type UserType interface {
