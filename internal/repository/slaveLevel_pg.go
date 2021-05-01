@@ -34,7 +34,7 @@ func (rep *SlaveLevelPostgres) CreateSlaveLevel(slaveLevel domain.SlaveLevel) er
 
 func (rep *SlaveLevelPostgres) GetSlaveLevel(lvl int32) (domain.SlaveLevel, error) {
 	slaveLevel := domain.SlaveLevel{}
-	err := rep.db.QueryRow(context.Background(), "SELECT * FROM slave_level WHERE lvl = $1;", lvl).Scan(
+	err := rep.db.QueryRow(context.Background(), "SELECT * FROM slave_level WHERE lvl = $1 LIMIT 1;", lvl).Scan(
 		&slaveLevel.Id,
 		&slaveLevel.Lvl,
 		&slaveLevel.Profit,

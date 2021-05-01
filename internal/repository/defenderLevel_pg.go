@@ -32,7 +32,7 @@ func (rep *DefenderLevelPostgres) CreateDefenderLevel(defenderLevel domain.Defen
 
 func (rep *DefenderLevelPostgres) GetDefenderLevel(lvl int32) (domain.DefenderLevel, error) {
 	defenderLevel := domain.DefenderLevel{}
-	err := rep.db.QueryRow(context.Background(), "SELECT * FROM defender_level WHERE lvl=$1;", lvl).Scan(
+	err := rep.db.QueryRow(context.Background(), "SELECT * FROM defender_level WHERE lvl=$1 LIMIT 1;", lvl).Scan(
 		&defenderLevel.Id,
 		&defenderLevel.Lvl,
 		&defenderLevel.Hp,

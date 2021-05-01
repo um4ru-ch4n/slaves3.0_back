@@ -23,7 +23,7 @@ func (rep *UserTypePostgres) CreateUserType(userType domain.UserType) error {
 
 func (rep *UserTypePostgres) GetUserType(name string) (domain.UserType, error) {
 	userType := domain.UserType{}
-	err := rep.db.QueryRow(context.Background(), "SELECT * FROM user_type WHERE name = $1;", name).Scan(&userType.Id, &userType.Name)
+	err := rep.db.QueryRow(context.Background(), "SELECT * FROM user_type WHERE name = $1 LIMIT 1;", name).Scan(&userType.Id, &userType.Name)
 
 	return userType, err
 }

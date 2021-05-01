@@ -42,7 +42,7 @@ func (rep *SlaveStatsPostgres) GetSlaveStats(id int32) (domain.SlaveStats, error
 			sl.money_to_update
 		FROM slave_stats ss
 		INNER JOIN slave_level sl
-			ON sl.id = ss.level;`).Scan(
+			ON sl.id = ss.level LIMIT 1;`).Scan(
 		&slaveStats.Id,
 		&slaveStats.MoneyQuantity,
 		&slaveStats.Level.Id,

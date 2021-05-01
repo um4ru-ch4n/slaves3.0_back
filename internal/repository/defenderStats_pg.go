@@ -43,7 +43,7 @@ func (rep *DefenderStatsPostgres) GetDefenderStats(id int32) (domain.DefenderSta
 			dl.damage_to_update
 		FROM defender_stats ds
 		INNER JOIN defender_level dl
-			ON dl.id = ds.level;`).Scan(
+			ON dl.id = ds.level LIMIT 1;`).Scan(
 		&defenderStats.Id,
 		&defenderStats.DamageQuantity,
 		&defenderStats.Level.Id,

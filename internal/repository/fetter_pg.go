@@ -32,7 +32,7 @@ func (rep *FetterPostgres) CreateFetter(fetter domain.Fetter) error {
 
 func (rep *FetterPostgres) GetFetter(name string) (domain.Fetter, error) {
 	fetter := domain.Fetter{}
-	err := rep.db.QueryRow(context.Background(), "SELECT * FROM fetter WHERE name = $1", name).Scan(
+	err := rep.db.QueryRow(context.Background(), "SELECT * FROM fetter WHERE name = $1 LIMIT 1;", name).Scan(
 		&fetter.Id,
 		&fetter.Name,
 		&fetter.Price,

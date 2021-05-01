@@ -64,7 +64,7 @@ type User struct {
 	VkInfo          *UserVkInfo    `json:"vk_info"`
 }
 
-type Slaves struct {
+type Slave struct {
 	UserId   *User
 	MasterId *User
 }
@@ -96,4 +96,13 @@ type FriendInfo struct {
 	Lastname    string           `json:"Lastname"`
 	Photo       string           `json:"photo"`
 	FrInfoLocal *FriendInfoLocal `json:"fr_info_local"`
+}
+
+type SlavesListInfo struct {
+	JobName       string
+	HasFetter     bool
+	SlaveLevel    int32
+	DefenderLevel int32
+	Profit        int32
+	FetterType    string
 }
