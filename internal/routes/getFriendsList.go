@@ -21,7 +21,5 @@ func (r *Router) getFriendsList(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": friends,
-	})
+	c.JSON(http.StatusOK, friends)
 }

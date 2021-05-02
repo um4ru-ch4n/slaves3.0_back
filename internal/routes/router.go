@@ -25,7 +25,7 @@ func (r *Router) InitRoutes() *gin.Engine {
 	}
 	people := router.Group("/people", r.hasAuth)
 	{
-		people.GET("/user", r.getOtherUser)
+		people.POST("/user", r.getOtherUser)
 	}
 
 	return router

@@ -10,6 +10,8 @@ type Authorization interface {
 	GetUser(id int32) (domain.User, error)
 	GetUserType(userId int32) (string, error)
 	GetFriendInfoLocal(id int32) (domain.FriendInfoLocal, error)
+	SlaveBuyUpdateInfo(newData slaveBuyUpdateInfo) error
+	SlaveCountBalanceUpdate(userId int32, slavesCount int32, balance int64) error
 }
 
 type UserType interface {
@@ -42,6 +44,12 @@ type DefenderStats interface {
 	GetDefenderStats(id int32) (domain.DefenderStats, error)
 }
 
+type Slave interface {
+	CreateSlave(slave domain.Slave) error
+	GetMaster(userId int32) (int32, error)
+	GetSlaves(userId int32) ([]domain.SlavesListInfo, error)
+}
+
 type Repository struct {
 	Authorization Authorization
 	UserType      UserType
@@ -50,6 +58,7 @@ type Repository struct {
 	SlaveStats    SlaveStats
 	DefenderLevel DefenderLevel
 	DefenderStats DefenderStats
+	Slave         Slave
 }
 
 func NewRepository(db *pgx.Conn) *Repository {
@@ -61,5 +70,6 @@ func NewRepository(db *pgx.Conn) *Repository {
 		SlaveStats:    NewSlaveStatsPostgres(db),
 		DefenderLevel: NewDefenderLevelPostgres(db),
 		DefenderStats: NewDefenderStatsPostgres(db),
+		Slave:         NewSlavePostgres(db),
 	}
 }

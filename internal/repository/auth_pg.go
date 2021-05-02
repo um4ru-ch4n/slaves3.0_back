@@ -111,7 +111,8 @@ func (rep *AuthPostgres) GetUser(id int32) (domain.User, error) {
 			ON dl.id = ds.level 
 		INNER JOIN fetter f 
 			ON f.id = u.fetter_type 
-		WHERE u.id = $1;`, id).Scan(
+		WHERE u.id = $1
+		LIMIT 1;`, id).Scan(
 		&user.Id,
 		&user.SlavesCount,
 		&user.Balance,
@@ -156,7 +157,8 @@ func (rep *AuthPostgres) GetUserType(userId int32) (string, error) {
 		FROM users u
 		INNER JOIN user_type ut 
 			ON ut.id = u.user_type
-		WHERE id = $1;`, userId).Scan(&usType)
+		WHERE id = $1
+		LIMIT 1;`, userId).Scan(&usType)
 
 	return usType, err
 }
@@ -186,7 +188,8 @@ func (rep *AuthPostgres) GetFriendInfoLocal(id int32) (domain.FriendInfoLocal, e
 			ON dl.id = ds.level 
 		INNER JOIN fetter f 
 			ON f.id = u.fetter_type 
-		WHERE u.id = $1;`, id).Scan(
+		WHERE u.id = $1
+		LIMIT 1;`, id).Scan(
 		&friendInfoLocal.MasterId,
 		&friendInfoLocal.HasFetter,
 		&friendInfoLocal.FetterType,
@@ -197,4 +200,44 @@ func (rep *AuthPostgres) GetFriendInfoLocal(id int32) (domain.FriendInfoLocal, e
 	)
 
 	return friendInfoLocal, err
+}
+
+type slaveBuyUpdateInfo struct {
+	SlaveId         int32
+	JobName         string
+	UserType        int32
+	PurchasePriceSm int64
+	SalePriceSm     int64
+}
+
+func (rep *AuthPostgres) SlaveBuyUpdateInfo(newData slaveBuyUpdateInfo) error {
+	_, err := rep.db.Exec(context.Background(),
+		`UPDATE users 
+		SET 
+			job_name = $1, 
+			user_type = $2, 
+			purchase_price_sm = $3, 
+			sale_price_sm = $4
+		WHERE id = $5;`,
+		newData.JobName,
+		newData.UserType,
+		newData.PurchasePriceSm,
+		newData.SalePriceSm,
+		newData.SlaveId)
+
+	return err
+}
+
+func (rep *AuthPostgres) SlaveCountBalanceUpdate(userId int32, slavesCount int32, balance int64) error {
+	_, err := rep.db.Exec(context.Background(),
+		`UPDATE users 
+		SET 
+			slaves_count = $1, 
+			balance = $2, 
+		WHERE id = $3;`,
+		slavesCount,
+		balance,
+		userId)
+
+	return err
 }
