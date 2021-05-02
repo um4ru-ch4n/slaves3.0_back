@@ -75,7 +75,7 @@ func (r *Router) getOtherUser(c *gin.Context) {
 		}
 		defenderStats.Id = defStatsId
 
-		fetter, err1 := r.services.Fetter.GetFetter("common")
+		fetter, err1 := r.services.Fetter.GetFetterByName("common")
 		if err1 != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": err1.Error(),
@@ -87,6 +87,7 @@ func (r *Router) getOtherUser(c *gin.Context) {
 			Id:              oUserId.UserId,
 			SlavesCount:     0,
 			Balance:         100,
+			Gold:            0,
 			Income:          0,
 			LastUpdate:      time.Now(),
 			JobName:         "",

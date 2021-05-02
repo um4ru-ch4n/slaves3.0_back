@@ -48,6 +48,7 @@ type User struct {
 	Id              int32          `json:"id"`
 	SlavesCount     int32          `json:"slaves_count"`
 	Balance         int64          `json:"balance"`
+	Gold            int32          `json:"gold"`
 	Income          int64          `json:"income"`
 	LastUpdate      time.Time      `json:"last_update"`
 	JobName         string         `json:"job_name"`
@@ -105,4 +106,12 @@ type SlavesListInfo struct {
 	DefenderLevel int32
 	Profit        int32
 	FetterType    string
+}
+
+type SlaveBuyUpdateInfo struct {
+	SlaveId         int32
+	JobName         string
+	UserType        string
+	PurchasePriceSm int64
+	SalePriceSm     int64
 }

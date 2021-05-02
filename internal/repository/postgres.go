@@ -126,6 +126,7 @@ ALTER TABLE public.defender_stats
     id integer NOT NULL,
     slaves_count integer NOT NULL,
     balance bigint NOT NULL,
+    gold integer NOT NULL DEFAULT 0,
     income bigint NOT NULL,
     last_update timestamp without time zone NOT NULL,
     job_name character varying(255) COLLATE pg_catalog."default" NOT NULL,

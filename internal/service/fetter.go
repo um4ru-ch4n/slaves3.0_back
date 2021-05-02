@@ -15,8 +15,8 @@ func NewFetterService(rep repository.Fetter) *FetterService {
 	}
 }
 
-func (serv *FetterService) GetFetter(name string) (domain.Fetter, error) {
-	user, err := serv.rep.GetFetter(name)
+func (serv *FetterService) GetFetterByName(name string) (domain.Fetter, error) {
+	user, err := serv.rep.GetFetterByName(name)
 
 	return user, err
 }
