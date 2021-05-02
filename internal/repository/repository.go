@@ -10,8 +10,10 @@ type Authorization interface {
 	GetUser(id int32) (domain.User, error)
 	GetUserType(userId int32) (string, error)
 	GetFriendInfoLocal(id int32) (domain.FriendInfoLocal, error)
-	SlaveBuyUpdateInfo(newData slaveBuyUpdateInfo) error
-	SlaveCountBalanceUpdate(userId int32, slavesCount int32, balance int64) error
+	SlaveBuyUpdateInfo(newData domain.SlaveBuyUpdateInfo) error
+	SlaveCountBalanceUpdate(userId int32, slavesCount int32, balance int64, gold int32) error
+	SetHasFetter(userId int32, hasFetter bool) error
+	GetUserBalance(userId int32) (int32, int64, int32, error)
 }
 
 type UserType interface {
@@ -21,7 +23,8 @@ type UserType interface {
 
 type Fetter interface {
 	CreateFetter(fetter domain.Fetter) error
-	GetFetter(name string) (domain.Fetter, error)
+	GetFetter(id int32) (domain.Fetter, error)
+	GetFetterByName(name string) (domain.Fetter, error)
 }
 
 type SlaveLevel interface {
@@ -45,7 +48,7 @@ type DefenderStats interface {
 }
 
 type Slave interface {
-	CreateSlave(slave domain.Slave) error
+	CreateOrUpdateSlave(userId int32, masterId int32) error
 	GetMaster(userId int32) (int32, error)
 	GetSlaves(userId int32) ([]domain.SlavesListInfo, error)
 }

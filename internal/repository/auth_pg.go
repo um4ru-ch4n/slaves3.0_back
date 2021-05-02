@@ -69,6 +69,7 @@ func (rep *AuthPostgres) GetUser(id int32) (domain.User, error) {
 			u.id,
 			u.slaves_count,
 			u.balance,
+			u.gold,
 			u.income,
 			u.last_update,
 			u.job_name,
@@ -116,6 +117,7 @@ func (rep *AuthPostgres) GetUser(id int32) (domain.User, error) {
 		&user.Id,
 		&user.SlavesCount,
 		&user.Balance,
+		&user.Gold,
 		&user.Income,
 		&user.LastUpdate,
 		&user.JobName,
@@ -202,20 +204,12 @@ func (rep *AuthPostgres) GetFriendInfoLocal(id int32) (domain.FriendInfoLocal, e
 	return friendInfoLocal, err
 }
 
-type slaveBuyUpdateInfo struct {
-	SlaveId         int32
-	JobName         string
-	UserType        int32
-	PurchasePriceSm int64
-	SalePriceSm     int64
-}
-
-func (rep *AuthPostgres) SlaveBuyUpdateInfo(newData slaveBuyUpdateInfo) error {
+func (rep *AuthPostgres) SlaveBuyUpdateInfo(newData domain.SlaveBuyUpdateInfo) error {
 	_, err := rep.db.Exec(context.Background(),
 		`UPDATE users 
 		SET 
 			job_name = $1, 
-			user_type = $2, 
+			user_type = (SELECT id FROM user_type WHERE name = $2), 
 			purchase_price_sm = $3, 
 			sale_price_sm = $4
 		WHERE id = $5;`,
@@ -228,16 +222,34 @@ func (rep *AuthPostgres) SlaveBuyUpdateInfo(newData slaveBuyUpdateInfo) error {
 	return err
 }
 
-func (rep *AuthPostgres) SlaveCountBalanceUpdate(userId int32, slavesCount int32, balance int64) error {
+func (rep *AuthPostgres) SlaveCountBalanceUpdate(userId int32, slavesCount int32, balance int64, gold int32) error {
 	_, err := rep.db.Exec(context.Background(),
 		`UPDATE users 
 		SET 
 			slaves_count = $1, 
 			balance = $2, 
-		WHERE id = $3;`,
+			gold = $3 
+		WHERE id = $4;`,
 		slavesCount,
 		balance,
+		gold,
 		userId)
 
 	return err
+}
+
+func (rep *AuthPostgres) SetHasFetter(userId int32, hasFetter bool) error {
+	_, err := rep.db.Exec(context.Background(),
+		"UPDATE users SET has_fetter = $1 WHERE id = $2", hasFetter, userId)
+
+	return err
+}
+
+func (rep *AuthPostgres) GetUserBalance(userId int32) (int32, int64, int32, error) {
+	var slavesCount, gold int32
+	var balance int64
+	err := rep.db.QueryRow(context.Background(), `SELECT slaves_count, balance, gold FROM users WHERE id = $1 LIMIT 1;`,
+		userId).Scan(&slavesCount, &balance, &gold)
+
+	return slavesCount, balance, gold, err
 }

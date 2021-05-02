@@ -11,6 +11,7 @@ type Authorization interface {
 	GetUserVkInfo(token string) (domain.UserVkInfo, error)
 	GetFriendsList(token string, friendId int32) ([]domain.FriendInfo, error)
 	GetFriendInfoLocal(friendId int32) (domain.FriendInfoLocal, error)
+	BuySlave(userId int32, slaveId int32) error
 }
 
 type UserType interface {
@@ -39,7 +40,7 @@ type DefenderStats interface {
 }
 
 type Fetter interface {
-	GetFetter(name string) (domain.Fetter, error)
+	GetFetterByName(name string) (domain.Fetter, error)
 	CreateFetter(fetter domain.Fetter) error
 }
 
@@ -55,7 +56,7 @@ type Service struct {
 
 func NewService(rep *repository.Repository) *Service {
 	return &Service{
-		Authorization: NewAuthService(rep.Authorization),
+		Authorization: NewAuthService(rep.Authorization, rep.Slave),
 		UserType:      NewUserTypeService(rep.UserType),
 		SlaveLevel:    NewSlaveLevelService(rep.SlaveLevel),
 		SlaveStats:    NewSlaveStatsService(rep.SlaveStats),

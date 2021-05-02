@@ -15,13 +15,17 @@ func NewSlavePostgres(db *pgx.Conn) *SlavePostgres {
 	return &SlavePostgres{db: db}
 }
 
-func (rep *SlavePostgres) CreateSlave(slave domain.Slave) error {
-	_, err := rep.db.Exec(context.Background(), `INSERT INTO slave(
-		user_id, 
-		master_id 
-	) VALUES ($1, $2);`,
-		slave.UserId,
-		slave.MasterId)
+func (rep *SlavePostgres) CreateOrUpdateSlave(userId int32, masterId int32) error {
+	_, err := rep.db.Exec(context.Background(),
+		`INSERT INTO slave(
+			user_id, 
+			master_id 
+		) VALUES ($1, $2)
+		ON CONFLICT (user_id)
+		DO
+			UPDATE SET master_id = $2;`,
+		userId,
+		masterId)
 
 	return err
 }
@@ -29,7 +33,7 @@ func (rep *SlavePostgres) CreateSlave(slave domain.Slave) error {
 func (rep *SlavePostgres) GetMaster(userId int32) (int32, error) {
 	var masterId int32
 	err := rep.db.QueryRow(context.Background(),
-		"SELECT * FROM slave WHERE user_id = $1",
+		"SELECT master_id FROM slave WHERE user_id = $1 LIMIT 1;",
 		userId).Scan(&masterId)
 
 	return masterId, err
