@@ -14,7 +14,6 @@ package domain
 // 	Name     string
 // 	Price    int32
 // 	Time     int32
-// 	Cooldown int32
 // }
 
 // type SlaveLevel struct {

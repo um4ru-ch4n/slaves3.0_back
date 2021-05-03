@@ -7,17 +7,17 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-type SlavePostgres struct {
+type UserMasterPostgres struct {
 	db *pgx.Conn
 }
 
-func NewSlavePostgres(db *pgx.Conn) *SlavePostgres {
-	return &SlavePostgres{db: db}
+func NewUserMasterPostgres(db *pgx.Conn) *UserMasterPostgres {
+	return &UserMasterPostgres{db: db}
 }
 
-func (rep *SlavePostgres) CreateOrUpdateSlave(userId int32, masterId int32) error {
+func (rep *UserMasterPostgres) CreateOrUpdateSlave(userId int32, masterId int32) error {
 	_, err := rep.db.Exec(context.Background(),
-		`INSERT INTO slave(
+		`INSERT INTO user_master(
 			user_id, 
 			master_id 
 		) VALUES ($1, $2)
@@ -30,35 +30,26 @@ func (rep *SlavePostgres) CreateOrUpdateSlave(userId int32, masterId int32) erro
 	return err
 }
 
-func (rep *SlavePostgres) GetMaster(userId int32) (int32, error) {
+func (rep *UserMasterPostgres) GetMaster(userId int32) (int32, error) {
 	var masterId int32
 	err := rep.db.QueryRow(context.Background(),
-		"SELECT master_id FROM slave WHERE user_id = $1 LIMIT 1;",
+		"SELECT master_id FROM user_master WHERE user_id = $1 LIMIT 1;",
 		userId).Scan(&masterId)
 
 	return masterId, err
 }
 
-func (rep *SlavePostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo, error) {
+func (rep *UserMasterPostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo, error) {
 	slaves := make([]domain.SlavesListInfo, 0, 500)
 	rows, err := rep.db.Query(context.Background(),
 		`SELECT 
 			u.job_name, 
-			u.has_fetter,
-			sl.lvl,
-			dl.lvl,
-			sl.profit,
-			f.name
-		FROM users u
-		INNER JOIN slave_stats ss
-			ON ss.id = u.slave_stats 
-		INNER JOIN slave_level sl
-			ON sl.id = ss.level 
-		INNER JOIN defender_stats ds
-			ON ss.id = u.defender_stats
-		INNER JOIN defender_level dl
-			ON dl.id = ds.level
-		INNER JOIN fetter f
+			u.fetter_time,
+			u.slave_level,
+			u.defender_level,
+			f.name 
+		FROM users u 
+		INNER JOIN fetter f 
 			ON f.id = u.fetter_type;`)
 
 	if err != nil {
@@ -71,11 +62,9 @@ func (rep *SlavePostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo, erro
 
 	for rows.Next() {
 		err := rows.Scan(&sl.JobName,
-			&sl.HasFetter,
-			&sl.SlaveLevel,
+			&sl.FetterTime,
 			&sl.SlaveLevel,
 			&sl.DefenderLevel,
-			&sl.Profit,
 			&sl.FetterType)
 		if err != nil {
 			return slaves, err

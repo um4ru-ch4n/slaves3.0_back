@@ -14,58 +14,62 @@ type Fetter struct {
 	Name     string `json:"name"`
 	Price    int32  `json:"price"`
 	Duration int32  `json:"duration"`
-	Cooldown int32  `json:"cooldown"`
 }
 
-type SlaveLevel struct {
-	Id            int32 `json:"id"`
-	Lvl           int32 `json:"lvl"`
-	Profit        int32 `json:"profit"`
-	MoneyToUpdate int64 `json:"money_to_update"`
-}
-
-type SlaveStats struct {
-	Id            int32       `json:"id"`
-	Level         *SlaveLevel `json:"level"`
-	MoneyQuantity int64       `json:"money_quantity"`
-}
-
-type DefenderLevel struct {
-	Id             int32 `json:"id"`
-	Lvl            int32 `json:"lvl"`
-	Hp             int32 `json:"hp"`
-	Damage         int32 `json:"damage"`
-	DamageToUpdate int64 `json:"damage_to_update"`
-}
-
-type DefenderStats struct {
-	Id             int32          `json:"id"`
-	Level          *DefenderLevel `json:"level"`
-	DamageQuantity int64          `json:"damage_quantity"`
-}
-
+// SlavesCount считаем запросом COUNT из таблицы user_master
+// Income считаем через INNER JOIN user_master ON users по полю profit
+// Profit and MoneyToUpdate calculates from SlaveLevel
+// Hp, Damage, DamageToUpdate calculates from DefenderLevel
+// SalePriceSm calculates from PurchasePriceSm
+// SalePriceGm calculates from PurchasePriceGm
+// HasFetter calculates from FetterTime. If FetterTime year = 1977, hasFetter = false otherwise true
 type User struct {
-	Id              int32          `json:"id"`
-	SlavesCount     int32          `json:"slaves_count"`
-	Balance         int64          `json:"balance"`
-	Gold            int32          `json:"gold"`
-	Income          int64          `json:"income"`
-	LastUpdate      time.Time      `json:"last_update"`
-	JobName         string         `json:"job_name"`
-	UserType        *UserType      `json:"user_type"`
-	SlaveStats      *SlaveStats    `json:"slave_stats"`
-	DefenderStats   *DefenderStats `json:"defender_stats"`
-	PurchasePriceSm int64          `json:"purchase_price_sm"`
-	SalePriceSm     int64          `json:"sale_price_sm"`
-	PurchasePriceGm int32          `json:"purchase_price_gm"`
-	SalePriceGm     int32          `json:"sale_price_gm"`
-	HasFetter       bool           `json:"has_fetter"`
-	FetterTime      time.Time      `json:"fetter_time"`
-	FetterType      *Fetter        `json:"fetter_type"`
-	VkInfo          *UserVkInfo    `json:"vk_info"`
+	Id              int32       `json:"id"`
+	Balance         int64       `json:"balance"`
+	Gold            int32       `json:"gold"`
+	LastUpdate      time.Time   `json:"last_update"`
+	JobName         string      `json:"job_name"`
+	UserType        string      `json:"user_type"`
+	SlaveLevel      int32       `json:"slave_level"`
+	MoneyQuantity   int64       `json:"money_quantity"`
+	DefenderLevel   int32       `json:"defender_level"`
+	DamageQuantity  int64       `json:"damage_quantity"`
+	PurchasePriceSm int64       `json:"purchase_price_sm"`
+	PurchasePriceGm int32       `json:"purchase_price_gm"`
+	FetterTime      time.Time   `json:"fetter_time"`
+	FetterType      *Fetter     `json:"fetter_type"`
+	VkInfo          *UserVkInfo `json:"vk_info"`
 }
 
-type Slave struct {
+type UserFull struct {
+	Id              int32       `json:"id"`
+	Balance         int64       `json:"balance"`
+	Gold            int32       `json:"gold"`
+	SlavesCount     int32       `json:"slaves_count"`     //
+	Income          int64       `json:"income"`           //
+	Profit          int32       `json:"profit"`           //
+	MoneyToUpdate   int64       `json:"money_to_update"`  //
+	Hp              int32       `json:"hp"`               //
+	Damage          int32       `json:"damage"`           //
+	DamageToUpdate  int64       `json:"damage_to_update"` //
+	LastUpdate      time.Time   `json:"last_update"`
+	JobName         string      `json:"job_name"`
+	UserType        string      `json:"user_type"`
+	SlaveLevel      int32       `json:"slave_level"`
+	MoneyQuantity   int64       `json:"money_quantity"`
+	DefenderLevel   int32       `json:"defender_level"`
+	DamageQuantity  int64       `json:"damage_quantity"`
+	PurchasePriceSm int64       `json:"purchase_price_sm"`
+	SalePriceSm     int64       `json:"sale_price_sm"` //
+	PurchasePriceGm int32       `json:"purchase_price_gm"`
+	SalePriceGm     int32       `json:"sale_price_gm"` //
+	HasFetter       bool        `json:"has_fetter"`    //
+	FetterTime      time.Time   `json:"fetter_time"`
+	FetterType      *Fetter     `json:"fetter_type"`
+	VkInfo          *UserVkInfo `json:"vk_info"`
+}
+
+type UserMaster struct {
 	UserId   *User
 	MasterId *User
 }
@@ -80,15 +84,15 @@ type UserVkInfo struct {
 }
 
 type FriendInfoLocal struct {
-	MasterId        int32  `json:"master_id"`
-	MasterFirstname string `json:"master_Firstname"`
-	MasterLastname  string `json:"master_Lastname"`
-	HasFetter       bool   `json:"has_fetter"`
-	FetterType      string `json:"fetter_type"`
-	PurchasePriceSm int64  `json:"purchase_price_sm"`
-	PurchasePriceGm int32  `json:"purchase_price_gm"`
-	SlaveLevel      int32  `json:"slave_level"`
-	DefenderLevel   int32  `json:"defender_level"`
+	MasterId        int32     `json:"master_id"`
+	MasterFirstname string    `json:"master_Firstname"`
+	MasterLastname  string    `json:"master_Lastname"`
+	FetterTime      time.Time `json:"fetter_time"`
+	FetterType      string    `json:"fetter_type"`
+	PurchasePriceSm int64     `json:"purchase_price_sm"`
+	PurchasePriceGm int32     `json:"purchase_price_gm"`
+	SlaveLevel      int32     `json:"slave_level"`
+	DefenderLevel   int32     `json:"defender_level"`
 }
 
 type FriendInfo struct {
@@ -101,10 +105,9 @@ type FriendInfo struct {
 
 type SlavesListInfo struct {
 	JobName       string
-	HasFetter     bool
+	FetterTime    time.Time `json:"fetter_time"`
 	SlaveLevel    int32
 	DefenderLevel int32
-	Profit        int32
 	FetterType    string
 }
 
@@ -113,5 +116,4 @@ type SlaveBuyUpdateInfo struct {
 	JobName         string
 	UserType        string
 	PurchasePriceSm int64
-	SalePriceSm     int64
 }
