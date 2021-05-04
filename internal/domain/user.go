@@ -84,11 +84,13 @@ type UserVkInfo struct {
 }
 
 type FriendInfoLocal struct {
+	UserId          int32     `json:"user_id"`
 	MasterId        int32     `json:"master_id"`
 	MasterFirstname string    `json:"master_Firstname"`
 	MasterLastname  string    `json:"master_Lastname"`
+	HasFetter       bool      `json:"has_fetter"`
 	FetterTime      time.Time `json:"fetter_time"`
-	FetterType      string    `json:"fetter_type"`
+	FetterType      *Fetter   `json:"fetter_type"`
 	PurchasePriceSm int64     `json:"purchase_price_sm"`
 	PurchasePriceGm int32     `json:"purchase_price_gm"`
 	SlaveLevel      int32     `json:"slave_level"`

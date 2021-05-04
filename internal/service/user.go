@@ -119,71 +119,88 @@ func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error)
 	return userFull, nil
 }
 
-// func (serv *AuthService) GetFriendsList(token string, friendId int32) ([]domain.FriendInfo, error) {
-// 	vk := api.NewVK(token)
+func (serv *AuthService) GetFriendsList(token string, friendId int32) ([]domain.FriendInfo, error) {
+	vk := api.NewVK(token)
 
-// 	res, err := vk.AppsGetFriendsListExtended(api.Params{
-// 		"fields": "screen_name, photo_100",
-// 	})
-// 	if err != nil {
-// 		return []domain.FriendInfo{}, err
-// 	}
+	res, err := vk.AppsGetFriendsListExtended(api.Params{
+		"fields": "screen_name, photo_100",
+	})
+	if err != nil {
+		return []domain.FriendInfo{}, err
+	}
 
-// 	friends := make([]domain.FriendInfo, res.Count)
+	friendsIds := make([]int32, res.Count)
 
-// 	for i, _ := range res.Items {
-// 		frInfLoc, err := serv.GetFriendInfoLocal(friendId)
-// 		if err != nil {
-// 			return friends, err
-// 		}
+	for i, _ := range res.Items {
+		friendsIds[i] = int32(res.Items[i].ID)
+	}
 
-// 		if frInfLoc.MasterId != 0 {
-// 			res, err := vk.UsersGet(api.Params{
-// 				"fields":  "screen_name, photo_100",
-// 				"user_id": frInfLoc.MasterId,
-// 			})
+	friends, err := serv.repAuth.GetFriendsInfoLocal(friendsIds)
+	if err != nil {
+		return []domain.FriendInfo{}, err
+	}
 
-// 			if err != nil {
-// 				return friends, err
-// 			}
+	mastersIds := make([]int32, 0, len(friends))
 
-// 			us := res[0]
+	for i, _ := range friends {
+		if friends[i].MasterId != 0 {
+			mastersIds = append(mastersIds, friends[i].MasterId)
+		}
+	}
 
-// 			frInfLoc.MasterFirstname = us.FirstName
-// 			frInfLoc.MasterLastname = us.LastName
-// 		}
+	var masters api.UsersGetResponse
 
-// 		friends[i] = domain.FriendInfo{
-// 			Id:          int32(res.Items[i].ID),
-// 			Firstname:   res.Items[i].FirstName,
-// 			Lastname:    res.Items[i].LastName,
-// 			Photo:       res.Items[i].Photo100,
-// 			FrInfoLocal: &frInfLoc,
-// 		}
-// 	}
+	if len(mastersIds) > 0 {
+		masters, err = vk.UsersGet(api.Params{
+			"user_ids": mastersIds,
+		})
 
-// 	return friends, nil
-// }
+		if err != nil {
+			return []domain.FriendInfo{}, err
+		}
+	}
 
-// func (serv *AuthService) GetFriendInfoLocal(friendId int32) (domain.FriendInfoLocal, error) {
-// 	frInfLoc, err := serv.repAuth.GetFriendInfoLocal(friendId)
+	friendsInfo := make([]domain.FriendInfo, 0, 100)
 
-// 	if err.Error() == "no rows in result set" {
-// 		return domain.FriendInfoLocal{
-// 			MasterId:        0,
-// 			MasterFirstname: "",
-// 			MasterLastname:  "",
-// 			HasFetter:       false,
-// 			FetterType:      "common",
-// 			PurchasePriceSm: 20,
-// 			PurchasePriceGm: 0,
-// 			SlaveLevel:      0,
-// 			DefenderLevel:   0,
-// 		}, nil
-// 	}
+	var j int32
 
-// 	return frInfLoc, err
-// }
+	for i, _ := range res.Items {
+		friendsInfo = append(friendsInfo, domain.FriendInfo{
+			Id:        int32(res.Items[i].ID),
+			Firstname: res.Items[i].FirstName,
+			Lastname:  res.Items[i].LastName,
+			Photo:     res.Items[i].Photo100,
+		})
+
+		if val, ok := friends[fmt.Sprint(res.Items[i].ID)]; ok {
+			friendsInfo[i].FrInfoLocal = &val
+			friendsInfo[i].FrInfoLocal.HasFetter = GetHasFetter(val.FetterTime, val.FetterType.Duration)
+
+			if val.MasterId != 0 {
+				friendsInfo[i].FrInfoLocal.MasterFirstname = masters[j].FirstName
+				friendsInfo[i].FrInfoLocal.MasterLastname = masters[j].LastName
+				j++
+			}
+		} else {
+			friendsInfo[i].FrInfoLocal = &domain.FriendInfoLocal{
+				UserId:          int32(res.Items[i].ID),
+				MasterId:        0,
+				MasterFirstname: "",
+				MasterLastname:  "",
+				HasFetter:       false,
+				FetterType: &domain.Fetter{
+					Name: "common",
+				},
+				PurchasePriceSm: 20,
+				PurchasePriceGm: 0,
+				SlaveLevel:      0,
+				DefenderLevel:   0,
+			}
+		}
+	}
+
+	return friendsInfo, nil
+}
 
 // func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
 // 	if userId == slaveId {

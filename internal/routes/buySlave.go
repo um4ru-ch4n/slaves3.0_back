@@ -19,12 +19,12 @@ func (r *Router) buySlave(c *gin.Context) {
 	var slaveId slaveId
 
 	if err := c.ShouldBindJSON(&slaveId); err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// if err := r.services.User.BuySlave(userVkInfo.Id, slaveId.SlaveId); err != nil {
-	// 	c.JSON(http.StatusInternalServerError, err)
+	// 	c.JSON(http.StatusInternalServerError, err.Error())
 	// 	return
 	// }
 

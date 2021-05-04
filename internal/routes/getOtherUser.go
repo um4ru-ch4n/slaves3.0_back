@@ -15,7 +15,7 @@ func (r *Router) getOtherUser(c *gin.Context) {
 	var oUserId oUserId
 
 	if err := c.ShouldBindJSON(&oUserId); err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -25,11 +25,11 @@ func (r *Router) getOtherUser(c *gin.Context) {
 		userInfo, err = r.services.User.CreateUser(oUserId.UserId, "default")
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, err)
+			c.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 

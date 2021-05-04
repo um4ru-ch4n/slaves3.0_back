@@ -16,12 +16,12 @@ func (r *Router) getUser(c *gin.Context) {
 	if err == pgx.ErrNoRows {
 		userInfo, err = r.services.User.CreateUser(userVkInfo.Id, "simp")
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, err)
+			c.JSON(http.StatusInternalServerError, err.Error())
 			return
 		}
 
 	} else if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
