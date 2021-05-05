@@ -127,8 +127,8 @@ func (rep *AuthPostgres) GetUserType(userId int32) (string, error) {
 	return usType, err
 }
 
-func (rep *AuthPostgres) GetFriendsInfoLocal(ids []int32) (map[string]domain.FriendInfoLocal, error) {
-	friendsInfoLocal := make(map[string]domain.FriendInfoLocal)
+func (rep *AuthPostgres) GetFriendsInfoLocal(ids []int32) (map[int32]domain.FriendInfoLocal, error) {
+	friendsInfoLocal := make(map[int32]domain.FriendInfoLocal)
 
 	var str string
 	for i, _ := range ids {
@@ -190,7 +190,7 @@ func (rep *AuthPostgres) GetFriendsInfoLocal(ids []int32) (map[string]domain.Fri
 			return friendsInfoLocal, err
 		}
 
-		friendsInfoLocal[fmt.Sprint(fr.UserId)] = fr
+		friendsInfoLocal[fr.UserId] = fr
 	}
 
 	return friendsInfoLocal, err
@@ -212,7 +212,7 @@ func (rep *AuthPostgres) SlaveBuyUpdateInfo(newData domain.SlaveBuyUpdateInfo) e
 	return err
 }
 
-func (rep *AuthPostgres) SlaveBalanceUpdate(userId int32, balance int64, gold int32) error {
+func (rep *AuthPostgres) UserBalanceUpdate(userId int32, balance int64, gold int32) error {
 	_, err := rep.db.Exec(context.Background(),
 		`UPDATE users 
 		SET 

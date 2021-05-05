@@ -9,8 +9,8 @@ type User interface {
 	CreateUser(userId int32, userType string) (domain.UserFull, error)
 	GetUserFull(id int32) (domain.UserFull, error)
 	GetUserVkInfo(token string) (domain.UserVkInfo, error)
-	GetFriendsList(token string, friendId int32) ([]domain.FriendInfo, error)
-	// BuySlave(userId int32, slaveId int32) error
+	GetFriendsList(token string) ([]domain.FriendInfo, error)
+	BuySlave(userId int32, slaveId int32) error
 }
 
 type Service struct {

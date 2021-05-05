@@ -43,3 +43,7 @@ func GetHasFetter(fetterTime time.Time, duration int32) bool {
 	}
 	return true
 }
+
+func IncSlavePurchasePriceSm(purchasePriceSm int64) int64 {
+	return int64(math.Round(float64(purchasePriceSm) * 1.2))
+}

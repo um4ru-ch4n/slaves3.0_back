@@ -1,3 +1,4 @@
 .env
 *.exe
 .vscode
+workspace.code-workspace

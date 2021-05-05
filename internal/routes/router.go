@@ -21,12 +21,12 @@ func (r *Router) InitRoutes() *gin.Engine {
 	user := router.Group("/user", r.hasAuth, r.userIdentity)
 	{
 		user.GET("/", r.getUser)
-		user.GET("/friends", r.getFriendsList)
-		// user.POST("/buyslave", r.buySlave)
+		user.POST("/buyslave", r.buySlave)
 	}
 	fellow := router.Group("/fellow", r.hasAuth)
 	{
 		fellow.POST("/", r.getOtherUser)
+		user.GET("/friends", r.getFriendsList)
 	}
 
 	return router

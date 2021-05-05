@@ -1,11 +1,13 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
 	"github.com/00mrx00/slaves3.0_back/internal/repository"
 	"github.com/SevereCloud/vksdk/v2/api"
+	"github.com/jackc/pgx/v4"
 )
 
 type AuthService struct {
@@ -119,7 +121,12 @@ func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error)
 	return userFull, nil
 }
 
-func (serv *AuthService) GetFriendsList(token string, friendId int32) ([]domain.FriendInfo, error) {
+type masterFullName struct {
+	Firstname string
+	Lastname  string
+}
+
+func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, error) {
 	vk := api.NewVK(token)
 
 	res, err := vk.AppsGetFriendsListExtended(api.Params{
@@ -148,21 +155,27 @@ func (serv *AuthService) GetFriendsList(token string, friendId int32) ([]domain.
 		}
 	}
 
-	var masters api.UsersGetResponse
+	// var masters api.UsersGetResponse
+	masters := make(map[int32]masterFullName, len(mastersIds))
 
 	if len(mastersIds) > 0 {
-		masters, err = vk.UsersGet(api.Params{
+		mst, err := vk.UsersGet(api.Params{
 			"user_ids": mastersIds,
 		})
 
 		if err != nil {
 			return []domain.FriendInfo{}, err
 		}
+
+		for i, _ := range mst {
+			masters[int32(mst[i].ID)] = masterFullName{
+				Firstname: mst[i].FirstName,
+				Lastname:  mst[i].LastName,
+			}
+		}
 	}
 
 	friendsInfo := make([]domain.FriendInfo, 0, 100)
-
-	var j int32
 
 	for i, _ := range res.Items {
 		friendsInfo = append(friendsInfo, domain.FriendInfo{
@@ -172,14 +185,13 @@ func (serv *AuthService) GetFriendsList(token string, friendId int32) ([]domain.
 			Photo:     res.Items[i].Photo100,
 		})
 
-		if val, ok := friends[fmt.Sprint(res.Items[i].ID)]; ok {
+		if val, ok := friends[int32(res.Items[i].ID)]; ok {
 			friendsInfo[i].FrInfoLocal = &val
 			friendsInfo[i].FrInfoLocal.HasFetter = GetHasFetter(val.FetterTime, val.FetterType.Duration)
 
 			if val.MasterId != 0 {
-				friendsInfo[i].FrInfoLocal.MasterFirstname = masters[j].FirstName
-				friendsInfo[i].FrInfoLocal.MasterLastname = masters[j].LastName
-				j++
+				friendsInfo[i].FrInfoLocal.MasterFirstname = masters[val.MasterId].Firstname
+				friendsInfo[i].FrInfoLocal.MasterLastname = masters[val.MasterId].Lastname
 			}
 		} else {
 			friendsInfo[i].FrInfoLocal = &domain.FriendInfoLocal{
@@ -202,7 +214,78 @@ func (serv *AuthService) GetFriendsList(token string, friendId int32) ([]domain.
 	return friendsInfo, nil
 }
 
-// func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
+func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
+	if userId == slaveId {
+		return errors.New("Can't buy yourself")
+	}
+
+	user, err := serv.repAuth.GetUser(userId)
+	if err != nil {
+		return err
+	}
+
+	slave, err := serv.repAuth.GetUser(slaveId)
+	if err != nil {
+		return err
+	}
+
+	slaveHasFetter := GetHasFetter(slave.FetterTime, slave.FetterType.Duration)
+
+	if slaveHasFetter {
+		return errors.New("Slave has fetter, you can't buy him")
+	}
+
+	if user.Balance < slave.PurchasePriceSm || user.Gold < slave.PurchasePriceGm {
+		return errors.New("Not enough money to buy a slave")
+	}
+
+	masterId, err := serv.repUserMaster.GetMaster(slaveId)
+	if err != nil && err != pgx.ErrNoRows {
+		return err
+	}
+
+	if masterId != 0 {
+		if masterId == userId {
+			return errors.New("Can't buy your slave")
+		} else {
+			balance, gold, err := serv.repAuth.GetUserBalance(masterId)
+			if err != nil {
+				return err
+			}
+
+			if err := serv.repAuth.UserBalanceUpdate(
+				masterId,
+				balance+slave.PurchasePriceSm,
+				gold+slave.PurchasePriceGm); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := serv.repAuth.UserBalanceUpdate(
+		userId,
+		user.Balance-slave.PurchasePriceSm,
+		user.Gold-slave.PurchasePriceGm); err != nil {
+		return err
+	}
+
+	if err := serv.repUserMaster.CreateOrUpdateSlave(slaveId, userId); err != nil {
+		return err
+	}
+
+	if err := serv.repAuth.SlaveBuyUpdateInfo(domain.SlaveBuyUpdateInfo{
+		SlaveId:         slaveId,
+		JobName:         "",
+		UserType:        "slave",
+		PurchasePriceSm: IncSlavePurchasePriceSm(slave.PurchasePriceSm),
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// func (serv *AuthService) BuySlaveOld(userId int32, slaveId int32) error {
 // 	if userId == slaveId {
 // 		return errors.New("Can't buy yourself")
 // 	}
@@ -273,7 +356,6 @@ func (serv *AuthService) GetFriendsList(token string, friendId int32) ([]domain.
 // 		JobName:         "",
 // 		UserType:        "slave",
 // 		PurchasePriceSm: int64(math.Round(float64(slave.PurchasePriceSm) * 1.2)),
-// 		SalePriceSm:     int64(math.Round(float64(slave.PurchasePriceSm) * 0.8)),
 // 	}); err != nil {
 // 		return err
 // 	}
