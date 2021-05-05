@@ -22,7 +22,7 @@ func (r *Router) getOtherUser(c *gin.Context) {
 	userInfo, err := r.services.User.GetUserFull(oUserId.UserId)
 
 	if err == pgx.ErrNoRows {
-		userInfo, err = r.services.User.CreateUser(oUserId.UserId, "default")
+		userInfo, err = r.services.User.CreateUser(oUserId.UserId, "simp")
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())

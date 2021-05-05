@@ -113,8 +113,7 @@ func CreateSchema(db *pgx.Conn) error {
 func CreateUserTypes(db *pgx.Conn) error {
 	_, err := db.Exec(context.Background(),
 		`INSERT INTO user_type(name) 
-        VALUES 
-            ('default'), 
+        VALUES  
             ('simp'), 
             ('slave'), 
             ('defender');`)

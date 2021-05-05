@@ -119,3 +119,7 @@ type SlaveBuyUpdateInfo struct {
 	UserType        string
 	PurchasePriceSm int64
 }
+
+type SlaveId struct {
+	SlaveId int32 `json:"slave_id" binding:"required"`
+}

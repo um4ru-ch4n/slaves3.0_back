@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (r *Router) buySlave(c *gin.Context) {
+func (r *Router) saleSlave(c *gin.Context) {
 	userVkInfo, _ := c.MustGet("user").(domain.UserVkInfo)
 
 	var slaveId domain.SlaveId
@@ -17,7 +17,7 @@ func (r *Router) buySlave(c *gin.Context) {
 		return
 	}
 
-	if err := r.services.User.BuySlave(userVkInfo.Id, slaveId.SlaveId); err != nil {
+	if err := r.services.User.SaleSlave(userVkInfo.Id, slaveId.SlaveId); err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}

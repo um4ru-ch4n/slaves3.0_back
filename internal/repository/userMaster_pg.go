@@ -74,3 +74,9 @@ func (rep *UserMasterPostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo,
 
 	return slaves, nil
 }
+
+func (rep *UserMasterPostgres) SaleSlave(slaveId int32) error {
+	_, err := rep.db.Exec(context.Background(), "DELETE FROM user_master WHERE user_id = $1;", slaveId)
+
+	return err
+}

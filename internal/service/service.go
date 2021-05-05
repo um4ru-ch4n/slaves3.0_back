@@ -11,6 +11,7 @@ type User interface {
 	GetUserVkInfo(token string) (domain.UserVkInfo, error)
 	GetFriendsList(token string) ([]domain.FriendInfo, error)
 	BuySlave(userId int32, slaveId int32) error
+	SaleSlave(userId int32, slaveId int32) error
 }
 
 type Service struct {

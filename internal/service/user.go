@@ -285,80 +285,53 @@ func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
 	return nil
 }
 
-// func (serv *AuthService) BuySlaveOld(userId int32, slaveId int32) error {
-// 	if userId == slaveId {
-// 		return errors.New("Can't buy yourself")
-// 	}
+func (serv *AuthService) SaleSlave(userId int32, slaveId int32) error {
+	if userId == slaveId {
+		return errors.New("Can't sale yourself")
+	}
 
-// 	user, err := serv.repAuth.GetUser(userId)
-// 	if err != nil {
-// 		return err
-// 	}
+	user, err := serv.repAuth.GetUser(userId)
+	if err != nil {
+		return err
+	}
 
-// 	slave, err := serv.repAuth.GetUser(slaveId)
-// 	if err != nil {
-// 		return err
-// 	}
+	slave, err := serv.repAuth.GetUser(slaveId)
+	if err != nil {
+		return err
+	}
 
-// 	timeNow, _ := time.Parse("2006-01-02 15:04:05", time.Now().Format("2006-01-02 15:04:05"))
+	masterId, err := serv.repUserMaster.GetMaster(slaveId)
+	if err != nil && err != pgx.ErrNoRows {
+		return err
+	}
 
-// 	if slave.HasFetter {
-// 		if int32(timeNow.Sub(slave.FetterTime).Minutes()) > user.FetterType.Duration {
-// 			slave.HasFetter = false
-// 			serv.repAuth.SetHasFetter(slave.Id, false)
-// 		} else {
-// 			return errors.New("UserMaster has fetter, you can't buy him")
-// 		}
-// 	}
+	if masterId == 0 {
+		return errors.New("Can't sale free slave")
+	}
 
-// 	if user.Balance < slave.PurchasePriceSm || user.Gold < slave.PurchasePriceGm {
-// 		return errors.New("Not enough money to buy a slave")
-// 	}
+	if masterId != userId {
+		return errors.New("Can't sale other's slave")
+	}
 
-// 	masterId, err := serv.repUserMaster.GetMaster(slaveId)
-// 	if err != nil && err != pgx.ErrNoRows {
-// 		return err
-// 	}
+	if err := serv.repAuth.UserBalanceUpdate(
+		userId,
+		user.Balance+slave.PurchasePriceSm,
+		user.Gold+slave.PurchasePriceGm); err != nil {
+		return err
+	}
 
-// 	if masterId != 0 {
-// 		if masterId == userId {
-// 			return errors.New("Can't buy your slave")
-// 		} else {
-// 			slavesCount, balance, gold, err := serv.repAuth.GetUserBalance(masterId)
-// 			if err != nil {
-// 				return err
-// 			}
+	if err := serv.repUserMaster.SaleSlave(slaveId); err != nil {
+		return err
+	}
 
-// 			if err := serv.repAuth.SlaveCountBalanceUpdate(
-// 				masterId,
-// 				slavesCount-1,
-// 				balance+slave.PurchasePriceSm,
-// 				gold+slave.PurchasePriceGm); err != nil {
-// 				return err
-// 			}
-// 		}
-// 	}
+	if err := serv.repAuth.SlaveBuyUpdateInfo(domain.SlaveBuyUpdateInfo{
+		SlaveId:         slaveId,
+		JobName:         "",
+		UserType:        "simp",
+		PurchasePriceSm: slave.PurchasePriceSm,
+	}); err != nil {
+		return err
+	}
 
-// 	if err := serv.repAuth.SlaveCountBalanceUpdate(
-// 		userId,
-// 		user.SlavesCount+1,
-// 		user.Balance-slave.PurchasePriceSm,
-// 		user.Gold-slave.PurchasePriceGm); err != nil {
-// 		return err
-// 	}
-
-// 	if err := serv.repUserMaster.CreateOrUpdateSlave(slaveId, userId); err != nil {
-// 		return err
-// 	}
-
-// 	if err := serv.repAuth.SlaveBuyUpdateInfo(domain.SlaveBuyUpdateInfo{
-// 		SlaveId:         slaveId,
-// 		JobName:         "",
-// 		UserType:        "slave",
-// 		PurchasePriceSm: int64(math.Round(float64(slave.PurchasePriceSm) * 1.2)),
-// 	}); err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
+	return nil
+}

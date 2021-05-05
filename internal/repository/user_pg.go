@@ -25,8 +25,9 @@ func (rep *AuthPostgres) CreateUser(userId int32, userType string) (domain.User,
 	err := rep.db.QueryRow(context.Background(),
 		`INSERT INTO users(
 			id, 
-			user_type) 
-		VALUES ($1, (SELECT id FROM user_type WHERE name = $2)) 
+			user_type,
+			last_update) 
+		VALUES ($1, (SELECT id FROM user_type WHERE name = $2), $3) 
 		RETURNING 
 			id, 
 			balance, 
@@ -43,7 +44,8 @@ func (rep *AuthPostgres) CreateUser(userId int32, userType string) (domain.User,
 			fetter_time, 
 			fetter_type;`,
 		userId,
-		userType).Scan(
+		userType,
+		time.Now()).Scan(
 		&user.Id,
 		&user.Balance,
 		&user.Gold,

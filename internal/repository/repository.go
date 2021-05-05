@@ -23,6 +23,7 @@ type UserMaster interface {
 	CreateOrUpdateSlave(userId int32, masterId int32) error
 	GetMaster(userId int32) (int32, error)
 	GetSlaves(userId int32) ([]domain.SlavesListInfo, error)
+	SaleSlave(slaveId int32) error
 }
 
 type Repository struct {
