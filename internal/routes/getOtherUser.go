@@ -19,10 +19,18 @@ func (r *Router) getOtherUser(c *gin.Context) {
 		return
 	}
 
+	userToken := c.MustGet("userToken").(string)
+
 	userInfo, err := r.services.User.GetUserFull(oUserId.UserId)
 
 	if err == pgx.ErrNoRows {
-		userInfo, err = r.services.User.CreateUser(oUserId.UserId, "simp")
+		userVkInfo, err := r.services.User.GetUsersVkInfo(userToken, []int32{oUserId.UserId})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		userInfo, err = r.services.User.CreateUser(oUserId.UserId, "simp", userVkInfo[0].Fio, userVkInfo[0].Photo)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())

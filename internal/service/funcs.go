@@ -6,44 +6,59 @@ import (
 )
 
 func GetSlaveProfit(slaveLevel int32) int32 {
-	return 1
+	slLvlFl := float64(slaveLevel)
+	return int32(math.Round(math.Pow(math.Log(slLvlFl), 3)*math.Pow(slLvlFl, 2)/2 + 1))
 }
 
-func GetSlaveMoneyToUpdate(slaveLevel, slaveProfit int32) int64 {
-	return 10
+func GetSlaveMoneyToUpdate(slaveLevel int32) int64 {
+	slLvlFl := float64(slaveLevel)
+	return int64(math.Round(math.Pow(math.Log(slLvlFl), 3)*math.Pow(slLvlFl, 4) + 10))
 }
 
 func GetDefenderHp(defenderLevel int32) int32 {
-	return 5
+	defLvlFl := float64(defenderLevel)
+	return int32(math.Round(math.Log(defLvlFl)*100*defLvlFl + 100))
 }
 
 func GetDefenderDamage(defenderLevel int32) int32 {
-	return 1
+	defLvlFl := float64(defenderLevel)
+	return int32(math.Round((math.Log(defLvlFl)*100*defLvlFl + 100) * 0.1))
 }
 
-func GetDefenderDamageToUpdate(defenderLevel, defenderDamage int32) int64 {
-	return 10
+func GetDefenderDamageToUpdate(defenderLevel int32) int64 {
+	defLvlFl := float64(defenderLevel)
+	return int64(10 * defenderLevel * int32(math.Round(math.Log(defLvlFl)*100*defLvlFl+100)))
 }
 
-func GetUserSalePriceSm(purchasePriceSm int64) int64 {
-	return int64(math.Round(float64(purchasePriceSm) * 0.8))
+func GetUserPurchasePriceSm(slaveLevel int32) int64 {
+	slLvlFl := float64(slaveLevel)
+	return int64(math.Round(math.Pow(slLvlFl, 2)*(math.Pow(math.Log(slLvlFl), 3)*math.Pow(slLvlFl, 2)/2+1) + 1))
 }
 
-func GetUserSalePriceGm(purchasePriceGm int32) int32 {
-	return int32(math.Round(float64(purchasePriceGm) * 0.8))
+func GetUserPurchasePriceGm(defenderLevel int32) int32 {
+	if defenderLevel == 1 {
+		return 0
+	}
+	defLvlFl := float64(defenderLevel)
+	return int32(math.Round(defLvlFl * math.Pow(1.1, defLvlFl-2)))
+}
+
+func GetUserSalePriceSm(slaveLevel int32) int64 {
+	if slaveLevel == 1 {
+		return 1
+	}
+	slLvlFl := float64(slaveLevel - 1)
+	return int64(math.Round((math.Pow(slLvlFl, 2)*(math.Pow(math.Log(slLvlFl), 3)*math.Pow(slLvlFl, 2)/2+1) + 1) * 0.8))
+}
+
+func GetUserSalePriceGm(defenderLevel int32) int32 {
+	if defenderLevel == 1 {
+		return 0
+	}
+	defLvlFl := float64(defenderLevel - 1)
+	return int32(math.Round((defLvlFl * math.Pow(1.1, defLvlFl-2) * 0.8)))
 }
 
 func GetHasFetter(fetterTime time.Time, duration int32) bool {
-	if fetterTime.Year() == 1971 {
-		return false
-	}
-
-	if int32(time.Now().Sub(fetterTime).Minutes()) > duration {
-		return false
-	}
-	return true
-}
-
-func IncSlavePurchasePriceSm(purchasePriceSm int64) int64 {
-	return int64(math.Round(float64(purchasePriceSm) * 1.2))
+	return int32(time.Since(fetterTime).Minutes()) < duration
 }

@@ -43,14 +43,20 @@ func (rep *UserMasterPostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo,
 	slaves := make([]domain.SlavesListInfo, 0, 500)
 	rows, err := rep.db.Query(context.Background(),
 		`SELECT 
+			u.id, 
+			u.fio, 
 			u.job_name, 
 			u.fetter_time,
+			f.name, 
+			f.duration,  
 			u.slave_level,
-			u.defender_level,
-			f.name 
-		FROM users u 
+			u.defender_level 
+		FROM user_master um 
+		INNER JOIN users u 
+			ON u.id = um.user_id 
 		INNER JOIN fetter f 
-			ON f.id = u.fetter_type;`)
+			ON f.id = u.fetter_type
+		WHERE um.master_id = $1;`, userId)
 
 	if err != nil {
 		return slaves, err
@@ -61,11 +67,15 @@ func (rep *UserMasterPostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo,
 	sl := domain.SlavesListInfo{}
 
 	for rows.Next() {
-		err := rows.Scan(&sl.JobName,
+		err := rows.Scan(
+			&sl.Id,
+			&sl.Fio,
+			&sl.JobName,
 			&sl.FetterTime,
+			&sl.FetterType,
+			&sl.FetterDuration,
 			&sl.SlaveLevel,
-			&sl.DefenderLevel,
-			&sl.FetterType)
+			&sl.DefenderLevel)
 		if err != nil {
 			return slaves, err
 		}
@@ -79,4 +89,41 @@ func (rep *UserMasterPostgres) SaleSlave(slaveId int32) error {
 	_, err := rep.db.Exec(context.Background(), "DELETE FROM user_master WHERE user_id = $1;", slaveId)
 
 	return err
+}
+
+func (rep *UserMasterPostgres) GetSlavesForUpdate(userId int32) ([]domain.SlaveInfoForUpdate, error) {
+	slaves := make([]domain.SlaveInfoForUpdate, 0, 500)
+	rows, err := rep.db.Query(context.Background(),
+		`SELECT 
+			u.id, 
+			(SELECT ut.name FROM user_type ut WHERE ut.id = u.user_type) as user_type, 
+			u.slave_level, 
+			u.money_quantity 
+		FROM user_master um 
+		INNER JOIN users u 
+			ON u.id = um.user_id 
+		WHERE um.master_id = $1;`, userId)
+
+	if err != nil {
+		return slaves, err
+	}
+
+	defer rows.Close()
+
+	sl := domain.SlaveInfoForUpdate{}
+
+	for rows.Next() {
+		err := rows.Scan(
+			&sl.Id,
+			&sl.UserType,
+			&sl.SlaveLevel,
+			&sl.MoneyQuantity)
+		if err != nil {
+			return slaves, err
+		}
+
+		slaves = append(slaves, sl)
+	}
+
+	return slaves, nil
 }

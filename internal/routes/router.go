@@ -20,14 +20,18 @@ func (r *Router) InitRoutes() *gin.Engine {
 
 	user := router.Group("/user", r.hasAuth, r.userIdentity)
 	{
-		user.GET("/", r.getUser)
+		user.GET("/", r.updateStats, r.getUser)
 		user.POST("/buyslave", r.buySlave)
 		user.POST("/saleslave", r.saleSlave)
+		user.GET("/slaves", r.getSlavesList)
+		user.POST("/setjobname", r.setJobName)
 	}
 	fellow := router.Group("/fellow", r.hasAuth)
 	{
 		fellow.POST("/", r.getOtherUser)
-		user.GET("/friends", r.getFriendsList)
+		fellow.GET("/friends", r.getFriendsList)
+		fellow.GET("/rating/slavescount", r.getRatingSlavesCount)
+		fellow.POST("/slaves", r.getOtherSlavesList)
 	}
 
 	return router

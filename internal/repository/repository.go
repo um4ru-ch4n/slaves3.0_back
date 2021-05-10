@@ -8,15 +8,20 @@ import (
 )
 
 type User interface {
-	CreateUser(userId int32, userType string) (domain.User, error)
+	CreateUser(userId int32, userType, fio, photo string) (domain.User, error)
 	GetUser(id int32) (domain.User, error)
 	GetUserType(userId int32) (string, error)
-	GetFriendsInfoLocal(ids []int32) (map[int32]domain.FriendInfoLocal, error)
+	GetFriendsInfo(ids []int32) (map[int32]domain.FriendInfo, error)
 	SlaveBuyUpdateInfo(newData domain.SlaveBuyUpdateInfo) error
 	UserBalanceUpdate(userId int32, balance int64, gold int32) error
 	SetFetterTime(userId int32, fetterTime time.Time) error
 	GetFetterTime(userId int32) (time.Time, error)
 	GetUserBalance(userId int32) (int64, int32, error)
+	GetRatingBySlavesCount(limit int32) ([]domain.RatingSlavesCount, error)
+	SetJobName(slaveId int32, jobName string) error
+	GetLastUpdate(userId int32) (time.Time, error)
+	UpdateUserBalanceHour(userId int32, balance int64) error
+	UpdateSlaveHour(slaveInfo domain.SlaveInfoForUpdate) error
 }
 
 type UserMaster interface {
@@ -24,6 +29,7 @@ type UserMaster interface {
 	GetMaster(userId int32) (int32, error)
 	GetSlaves(userId int32) ([]domain.SlavesListInfo, error)
 	SaleSlave(slaveId int32) error
+	GetSlavesForUpdate(userId int32) ([]domain.SlaveInfoForUpdate, error)
 }
 
 type Repository struct {

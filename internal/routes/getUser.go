@@ -14,7 +14,7 @@ func (r *Router) getUser(c *gin.Context) {
 	userInfo, err := r.services.User.GetUserFull(userVkInfo.Id)
 
 	if err == pgx.ErrNoRows {
-		userInfo, err = r.services.User.CreateUser(userVkInfo.Id, "simp")
+		userInfo, err = r.services.User.CreateUser(userVkInfo.Id, "simp", userVkInfo.Fio, userVkInfo.Photo)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err.Error())
 			return
@@ -24,8 +24,6 @@ func (r *Router) getUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	userInfo.VkInfo = &userVkInfo
 
 	c.JSON(http.StatusOK, userInfo)
 }
