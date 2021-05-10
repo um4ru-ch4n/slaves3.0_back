@@ -414,7 +414,6 @@ func (serv *AuthService) GetLastUpdate(userId int32) (time.Time, error) {
 }
 
 func (serv *AuthService) UpdateUserInfo(userId int32) error {
-	fmt.Println("update")
 	user, err := serv.repAuth.GetUser(userId)
 	if err != nil {
 		return err
@@ -430,32 +429,37 @@ func (serv *AuthService) UpdateUserInfo(userId int32) error {
 	var tmpTime float64
 
 	timeSinceLUpd := time.Since(user.LastUpdate).Minutes()
+	timeSinceCopy := timeSinceLUpd
 
 	for i, _ := range slaves {
 		slaveProfit = GetSlaveProfit(slaves[i].SlaveLevel)
 		balancePerTime = int64(math.Round(float64(slaveProfit) * timeSinceLUpd))
 		slaveMoneyToUpdate = GetSlaveMoneyToUpdate(slaves[i].SlaveLevel)
-		for balancePerTime+slaves[i].MoneyQuantity > slaveMoneyToUpdate {
-			slaves[i].SlaveLevel++
-			tmpTime = float64(slaveMoneyToUpdate) / float64(slaveProfit)
-			timeSinceLUpd -= tmpTime
-			incBalance += int64(math.Round(tmpTime * float64(slaveProfit)))
 
+		for balancePerTime+slaves[i].MoneyQuantity >= slaveMoneyToUpdate {
+			tmpTime = float64((slaveMoneyToUpdate - slaves[i].MoneyQuantity) / int64(slaveProfit))
+
+			timeSinceCopy -= tmpTime
+			incBalance += (slaveMoneyToUpdate - slaves[i].MoneyQuantity)
+
+			slaves[i].SlaveLevel++
 			slaveProfit = GetSlaveProfit(slaves[i].SlaveLevel)
-			balancePerTime = int64(math.Round(float64(slaveProfit) * timeSinceLUpd))
+			balancePerTime = int64(math.Round(float64(slaveProfit) * timeSinceCopy))
 			slaveMoneyToUpdate = GetSlaveMoneyToUpdate(slaves[i].SlaveLevel)
 
 			slaves[i].MoneyQuantity = 0
+
 		}
-		incBalance += int64(math.Round(timeSinceLUpd * float64(slaveProfit)))
-		slaves[i].MoneyQuantity += int64(math.Round(timeSinceLUpd * float64(slaveProfit)))
-		user.Balance += incBalance
+		incBalance += int64(math.Round(timeSinceCopy * float64(slaveProfit)))
+		slaves[i].MoneyQuantity += int64(math.Round(timeSinceCopy * float64(slaveProfit)))
+		timeSinceCopy = timeSinceLUpd
 
 		if err := serv.repAuth.UpdateSlaveHour(slaves[i]); err != nil {
 			return err
 		}
 	}
 
+	user.Balance += incBalance
 	user.LastUpdate = time.Now()
 
 	serv.repAuth.UpdateUserBalanceHour(userId, user.Balance)
