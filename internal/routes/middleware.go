@@ -89,6 +89,8 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 		return
 	}
 
+	c.Set(userId, oUserId.UserId)
+
 	lastUpdate, err := r.services.User.GetLastUpdate(oUserId.UserId)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -108,6 +110,4 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
 		return
 	}
-
-	c.Set(userId, oUserId.UserId)
 }
