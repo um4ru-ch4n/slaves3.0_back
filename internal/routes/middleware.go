@@ -15,6 +15,7 @@ const (
 	userCtx             = "user"
 	tokenType           = "AccessToken"
 	tokenCtx            = "userToken"
+	userId              = "userId"
 )
 
 func (r *Router) hasAuth(c *gin.Context) {
@@ -52,7 +53,7 @@ func (r *Router) userIdentity(c *gin.Context) {
 	c.Set(userCtx, userVkInfo)
 }
 
-func (r *Router) updateStats(c *gin.Context) {
+func (r *Router) updateStatsHour(c *gin.Context) {
 	userVkInfo, _ := c.MustGet(userCtx).(domain.UserVkInfo)
 
 	lastUpdate, err := r.services.User.GetLastUpdate(userVkInfo.Id)
@@ -74,4 +75,39 @@ func (r *Router) updateStats(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
 		return
 	}
+}
+
+type oUserIdType struct {
+	UserId int32 `json:"user_id" binding:"required"`
+}
+
+func (r *Router) updateStatsHourOther(c *gin.Context) {
+	var oUserId oUserIdType
+
+	if err := c.ShouldBindJSON(&oUserId); err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	lastUpdate, err := r.services.User.GetLastUpdate(oUserId.UserId)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			c.Next()
+		} else {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		}
+		return
+	}
+
+	if time.Since(lastUpdate).Minutes() < 1 {
+		c.Next()
+		return
+	}
+
+	if err := r.services.User.UpdateUserInfo(oUserId.UserId); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Set(userId, oUserId.UserId)
 }

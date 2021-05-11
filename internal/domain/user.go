@@ -96,7 +96,8 @@ type FriendInfo struct {
 type SlavesListInfo struct {
 	Id             int32     `json:"id"`
 	Fio            string    `json:"fio"`
-	Income         int64     `json:"income"`
+	Photo          string    `json:"photo"`
+	Profit         int64     `json:"profit"`
 	JobName        string    `json:"job_name"`
 	HasFetter      bool      `json:"has_fetter"`
 	FetterTime     time.Time `json:"fetter_time"`

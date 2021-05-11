@@ -33,6 +33,7 @@ func (serv *AuthService) GetUser(id int32) (domain.User, error) {
 }
 
 func (serv *AuthService) CreateUser(userId int32, userType, fio, photo string) (domain.UserFull, error) {
+
 	user, err := serv.repAuth.CreateUser(userId, userType, fio, photo)
 	if err != nil {
 		return domain.UserFull{}, err
@@ -389,6 +390,7 @@ func (serv *AuthService) GetSlavesList(userId int32) ([]domain.SlavesListInfo, e
 
 	for i, _ := range slavesList {
 		slavesList[i].HasFetter = GetHasFetter(slavesList[i].FetterTime, slavesList[i].FetterDuration)
+		slavesList[i].Profit = int64(GetSlaveProfit(slavesList[i].SlaveLevel))
 	}
 
 	return slavesList, err
