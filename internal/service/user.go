@@ -167,18 +167,23 @@ func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error)
 func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, error) {
 	vk := api.NewVK(token)
 
-	res, err := vk.AppsGetFriendsListExtended(api.Params{
-		"fields": "photo_100",
-		"count":  5000,
+	ids, err := vk.FriendsGet(api.Params{})
+	if err != nil {
+		return []domain.FriendInfo{}, err
+	}
+
+	res, err := vk.UsersGet(api.Params{
+		"fields":   "photo_100",
+		"user_ids": ids.Items,
 	})
 	if err != nil {
 		return []domain.FriendInfo{}, err
 	}
 
-	friendsIds := make([]int32, res.Count)
+	friendsIds := make([]int32, len(res))
 
-	for i, _ := range res.Items {
-		friendsIds[i] = int32(res.Items[i].ID)
+	for i, _ := range res {
+		friendsIds[i] = int32(res[i].ID)
 	}
 
 	friends, err := serv.repAuth.GetFriendsInfo(friendsIds)
@@ -212,14 +217,14 @@ func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, erro
 
 	friendsInfo := make([]domain.FriendInfo, 0, 100)
 
-	for i, _ := range res.Items {
+	for i, _ := range res {
 		friendsInfo = append(friendsInfo, domain.FriendInfo{
-			Id:    int32(res.Items[i].ID),
-			Fio:   res.Items[i].LastName + " " + res.Items[i].FirstName,
-			Photo: res.Items[i].Photo100,
+			Id:    int32(res[i].ID),
+			Fio:   res[i].LastName + " " + res[i].FirstName,
+			Photo: res[i].Photo100,
 		})
 
-		if val, ok := friends[int32(res.Items[i].ID)]; ok {
+		if val, ok := friends[int32(res[i].ID)]; ok {
 			friendsInfo[i].HasFetter = GetHasFetter(val.FetterTime, val.FetterDuration)
 			friendsInfo[i].MasterId = val.MasterId
 			friendsInfo[i].FetterTime = val.FetterTime
