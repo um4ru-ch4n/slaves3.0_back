@@ -169,6 +169,7 @@ func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, erro
 
 	res, err := vk.AppsGetFriendsListExtended(api.Params{
 		"fields": "photo_100",
+		"count":  5000,
 	})
 	if err != nil {
 		return []domain.FriendInfo{}, err
