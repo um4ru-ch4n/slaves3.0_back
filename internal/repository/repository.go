@@ -11,7 +11,7 @@ type User interface {
 	CreateUser(userId int32, userType, fio, photo string) (domain.User, error)
 	GetUser(id int32) (domain.User, error)
 	GetUserType(userId int32) (string, error)
-	GetFriendsInfo(ids []int32) (map[int32]domain.FriendInfo, error)
+	GetFriendsInfo(ids []int) (map[int32]domain.FriendInfo, error)
 	SlaveBuyUpdateInfo(newData domain.SlaveBuyUpdateInfo) error
 	UserBalanceUpdate(userId int32, balance int64, gold int32) error
 	SetFetterTime(userId int32, fetterTime time.Time) error

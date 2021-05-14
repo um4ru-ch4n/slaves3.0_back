@@ -141,7 +141,7 @@ func (rep *AuthPostgres) GetUserType(userId int32) (string, error) {
 	return usType, err
 }
 
-func (rep *AuthPostgres) GetFriendsInfo(ids []int32) (map[int32]domain.FriendInfo, error) {
+func (rep *AuthPostgres) GetFriendsInfo(ids []int) (map[int32]domain.FriendInfo, error) {
 	friendsInfo := make(map[int32]domain.FriendInfo)
 
 	rows, err := rep.db.Query(context.Background(),

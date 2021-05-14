@@ -180,13 +180,7 @@ func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, erro
 		return []domain.FriendInfo{}, err
 	}
 
-	friendsIds := make([]int32, len(res))
-
-	for i, _ := range res {
-		friendsIds[i] = int32(res[i].ID)
-	}
-
-	friends, err := serv.repAuth.GetFriendsInfo(friendsIds)
+	friends, err := serv.repAuth.GetFriendsInfo(ids.Items)
 	if err != nil {
 		return []domain.FriendInfo{}, err
 	}
