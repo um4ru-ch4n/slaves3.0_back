@@ -115,7 +115,6 @@ func (serv *AuthService) GetUserFull(id int32) (domain.UserFull, error) {
 func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error) {
 	slaves, err := serv.repUserMaster.GetSlaves(user.Id)
 	if err != nil {
-		fmt.Println(err)
 		return domain.UserFull{}, err
 	}
 
@@ -130,8 +129,14 @@ func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error)
 	profit := GetSlaveProfit(user.SlaveLevel)
 	damage := GetDefenderDamage(user.DefenderLevel)
 
+	masterId, err := serv.repUserMaster.GetMaster(user.Id)
+	if err != nil && err != pgx.ErrNoRows {
+		return domain.UserFull{}, err
+	}
+
 	userFull := domain.UserFull{
 		Id:              user.Id,
+		MasterId:        masterId,
 		Fio:             user.Fio,
 		Photo:           user.Photo,
 		Balance:         user.Balance,
