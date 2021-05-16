@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"time"
 
@@ -88,7 +87,6 @@ func (serv *AuthService) GetUsersVkInfo(token string, usersIds []int32) ([]domai
 func (serv *AuthService) GetUserIncome(userId int32) (int64, error) {
 	slaves, err := serv.repUserMaster.GetSlaves(userId)
 	if err != nil {
-		fmt.Println(err)
 		return 0, err
 	}
 
@@ -392,6 +390,9 @@ func (serv *AuthService) GetRatingBySlavesCount() ([]domain.RatingSlavesCount, e
 
 func (serv *AuthService) GetSlavesList(userId int32) ([]domain.SlavesListInfo, error) {
 	slavesList, err := serv.repUserMaster.GetSlaves(userId)
+	if err != nil {
+		return slavesList, err
+	}
 
 	for i, _ := range slavesList {
 		slavesList[i].HasFetter = GetHasFetter(slavesList[i].FetterTime, slavesList[i].FetterDuration)

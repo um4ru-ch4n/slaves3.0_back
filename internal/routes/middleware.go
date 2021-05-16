@@ -46,7 +46,7 @@ func (r *Router) userIdentity(c *gin.Context) {
 	userVkInfo, err := r.services.User.GetUserVkInfo(token)
 
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, err)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
 		return
 	}
 
@@ -61,7 +61,7 @@ func (r *Router) updateStatsHour(c *gin.Context) {
 		if err == pgx.ErrNoRows {
 			c.Next()
 		} else {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		}
 		return
 	}
@@ -72,7 +72,7 @@ func (r *Router) updateStatsHour(c *gin.Context) {
 	}
 
 	if err := r.services.User.UpdateUserInfo(userVkInfo.Id); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 }
@@ -96,7 +96,7 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 		if err == pgx.ErrNoRows {
 			c.Next()
 		} else {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		}
 		return
 	}
@@ -107,7 +107,7 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 	}
 
 	if err := r.services.User.UpdateUserInfo(oUserId.UserId); err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 }

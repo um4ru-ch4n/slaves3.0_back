@@ -1,0 +1,2 @@
+TODO: create general config for game balancing in ~/configs/stats.yml
+TODO: create swagger documentation
