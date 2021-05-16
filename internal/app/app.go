@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/00mrx00/slaves3.0_back/internal/config"
 	"github.com/00mrx00/slaves3.0_back/internal/repository"
@@ -41,6 +42,7 @@ func Run() {
 
 	if err := router.InitRoutes().Run(routerConfig.Port); err != nil {
 		sugar.Errorf("Failed to initialize router: %s", err.Error())
+		fmt.Println(routerConfig)
 	}
 
 	sugar.Info("Slaves 3.0 successfully started...")
