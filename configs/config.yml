@@ -1,2 +1,2 @@
 db:
-    ssl: "required" # disable for localhost
+    ssl: "require" # disable for localhost
