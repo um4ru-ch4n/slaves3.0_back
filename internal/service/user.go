@@ -355,8 +355,8 @@ func (serv *AuthService) SaleSlave(userId int32, slaveId int32) error {
 
 	if err := serv.repAuth.UserBalanceUpdate(
 		userId,
-		user.Balance+GetUserPurchasePriceSm(slave.SlaveLevel),
-		user.Gold+GetUserPurchasePriceGm(slave.DefenderLevel)); err != nil {
+		user.Balance+GetUserSalePriceSm(slave.SlaveLevel),
+		user.Gold+GetUserSalePriceGm(slave.DefenderLevel)); err != nil {
 		return err
 	}
 
