@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type UserMasterPostgres struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewUserMasterPostgres(db *pgx.Conn) *UserMasterPostgres {
+func NewUserMasterPostgres(db *pgxpool.Pool) *UserMasterPostgres {
 	return &UserMasterPostgres{db: db}
 }
 

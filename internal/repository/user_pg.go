@@ -5,14 +5,14 @@ import (
 	"time"
 
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type AuthPostgres struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewAuthPostgres(db *pgx.Conn) *AuthPostgres {
+func NewAuthPostgres(db *pgxpool.Pool) *AuthPostgres {
 	return &AuthPostgres{db: db}
 }
 

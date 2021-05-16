@@ -1,8 +1,6 @@
 package app
 
 import (
-	"context"
-
 	"github.com/00mrx00/slaves3.0_back/internal/config"
 	"github.com/00mrx00/slaves3.0_back/internal/repository"
 	"github.com/00mrx00/slaves3.0_back/internal/routes"
@@ -27,7 +25,7 @@ func Run() {
 		sugar.Errorf("Failed to connect DB: %s", err.Error())
 	}
 
-	defer db.Close(context.Background())
+	defer db.Close()
 
 	rep := repository.NewRepository(db)
 	service := service.NewService(rep)

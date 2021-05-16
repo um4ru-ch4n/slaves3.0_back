@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type User interface {
@@ -37,7 +37,7 @@ type Repository struct {
 	UserMaster UserMaster
 }
 
-func NewRepository(db *pgx.Conn) *Repository {
+func NewRepository(db *pgxpool.Pool) *Repository {
 	return &Repository{
 		User:       NewAuthPostgres(db),
 		UserMaster: NewUserMasterPostgres(db),

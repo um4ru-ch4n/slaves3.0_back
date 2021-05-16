@@ -1,8 +1,6 @@
 package app
 
 import (
-	"context"
-
 	"github.com/00mrx00/slaves3.0_back/internal/config"
 	"github.com/00mrx00/slaves3.0_back/internal/repository"
 	"go.uber.org/zap"
@@ -25,7 +23,7 @@ func CreateSchema() {
 		sugar.Errorf("Failed to connect DB: %s", err.Error())
 	}
 
-	defer db.Close(context.Background())
+	defer db.Close()
 
 	if err := repository.CreateSchema(db); err != nil {
 		sugar.Errorf("Failed to create schema: %s", err.Error())
