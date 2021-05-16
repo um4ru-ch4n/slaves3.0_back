@@ -40,7 +40,7 @@ func Run() {
 		sugar.Errorf("Failed to get Router config: %s", err.Error())
 	}
 
-	if err := router.InitRoutes().Run(); err != nil {
+	if err := router.InitRoutes().Run(routerConfig.Port); err != nil {
 		fmt.Println(routerConfig)
 		sugar.Errorf("Failed to initialize router: %s", err.Error())
 	}
