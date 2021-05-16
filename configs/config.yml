@@ -1,5 +1,2 @@
-router:
-    port: ":8083"
-
 db:
-    ssl: "disable"
+    ssl: "required" # disable for localhost

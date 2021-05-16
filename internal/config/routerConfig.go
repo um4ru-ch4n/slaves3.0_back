@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
@@ -23,7 +25,7 @@ func GetRouterConfig() (RouterConfig, error) {
 	}
 
 	return RouterConfig{
-		Port: viper.GetString("router.port"),
+		Port: os.Getenv("PORT"),
 	}, nil
 
 }
