@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -25,16 +24,16 @@ func GetDbConfig() (DbConfig, error) {
 		return DbConfig{}, err
 	}
 
-	if err := godotenv.Load(); err != nil {
-		return DbConfig{}, err
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	return DbConfig{}, err
+	// }
 
 	return DbConfig{
-		Host:     viper.GetString("db.host"),
-		Port:     viper.GetString("db.port"),
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
 		Username: os.Getenv("DB_USERNAME"),
 		Password: os.Getenv("DB_PASSWORD"),
-		DbName:   viper.GetString("db.name"),
+		DbName:   os.Getenv("DB_NAME"),
 		SSLMode:  viper.GetString("db.ssl"),
 	}, nil
 

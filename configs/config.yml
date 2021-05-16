@@ -2,7 +2,4 @@ router:
     port: ":8083"
 
 db:
-    host: "localhost"
-    port: "5432"
-    name: "slaves"
     ssl: "require"

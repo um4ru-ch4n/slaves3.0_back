@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -18,9 +17,9 @@ func GetRouterConfig() (RouterConfig, error) {
 		return RouterConfig{}, err
 	}
 
-	if err := godotenv.Load(); err != nil {
-		return RouterConfig{}, err
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	return RouterConfig{}, err
+	// }
 
 	return RouterConfig{
 		Port: viper.GetString("router.port"),
