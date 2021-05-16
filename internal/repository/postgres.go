@@ -9,7 +9,7 @@ import (
 
 func NewPostgresDB(cfg config.DbConfig) (*pgx.Conn, error) {
 	baseconn := "host=" + cfg.Host + " port=" + cfg.Port + " user=" + cfg.Username +
-		" password=" + cfg.Password + " database=" + cfg.DbName + " sslmode=" + cfg.SSLMode
+		" password=" + cfg.Password + " database=" + cfg.DbName + " sslmode=require"
 
 	db, err := pgx.Connect(context.Background(), baseconn)
 

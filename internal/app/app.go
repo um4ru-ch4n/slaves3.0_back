@@ -40,9 +40,9 @@ func Run() {
 		sugar.Errorf("Failed to get Router config: %s", err.Error())
 	}
 
-	if err := router.InitRoutes().Run(routerConfig.Port); err != nil {
-		sugar.Errorf("Failed to initialize router: %s", err.Error())
+	if err := router.InitRoutes().Run("8083"); err != nil {
 		fmt.Println(routerConfig)
+		sugar.Errorf("Failed to initialize router: %s", err.Error())
 	}
 
 	sugar.Info("Slaves 3.0 successfully started...")
