@@ -5,4 +5,4 @@ db:
     host: "localhost"
     port: "5432"
     name: "slaves"
-    ssl: "disable"
+    ssl: "require"
