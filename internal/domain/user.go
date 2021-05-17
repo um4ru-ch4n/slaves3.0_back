@@ -37,7 +37,6 @@ type User struct {
 
 type UserFull struct {
 	Id              int32     `json:"id"`
-	MasterId        int32     `json:"master_id"`
 	Fio             string    `json:"fio"`
 	Photo           string    `json:"photo"`
 	Balance         int64     `json:"balance"`

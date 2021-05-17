@@ -127,14 +127,8 @@ func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error)
 	profit := GetSlaveProfit(user.SlaveLevel)
 	damage := GetDefenderDamage(user.DefenderLevel)
 
-	masterId, err := serv.repUserMaster.GetMaster(user.Id)
-	if err != nil && err != pgx.ErrNoRows {
-		return domain.UserFull{}, errors.Wrap(err, "setAddFields serv.repUserMaster.GetMaster AuthService")
-	}
-
 	userFull := domain.UserFull{
 		Id:              user.Id,
-		MasterId:        masterId,
 		Fio:             user.Fio,
 		Photo:           user.Photo,
 		Balance:         user.Balance,
