@@ -3,15 +3,18 @@ package routes
 import (
 	"github.com/00mrx00/slaves3.0_back/internal/service"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type Router struct {
 	services *service.Service
+	logger   *zap.Logger
 }
 
-func NewRouter(services *service.Service) *Router {
+func NewRouter(services *service.Service, logger *zap.Logger) *Router {
 	return &Router{
 		services: services,
+		logger:   logger,
 	}
 }
 

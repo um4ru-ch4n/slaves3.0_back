@@ -35,7 +35,7 @@ func Run() {
 
 	rep := repository.NewRepository(db)
 	service := service.NewService(rep)
-	router := routes.NewRouter(service)
+	router := routes.NewRouter(service, logger)
 
 	if err := router.InitRoutes().Run(); err != nil {
 		logger.Fatal("Failed to initialize router: ", zap.Error(err))
