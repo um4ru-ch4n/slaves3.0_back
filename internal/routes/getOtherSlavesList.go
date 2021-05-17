@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type UserId struct {
@@ -14,12 +15,14 @@ func (r *Router) getOtherSlavesList(c *gin.Context) {
 	var userId UserId
 
 	if err := c.ShouldBindJSON(&userId); err != nil {
+		r.logger.Error("getOtherSlavesList c.ShouldBindJSON Router: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	slavesList, err := r.services.User.GetSlavesList(userId.UserId)
 	if err != nil {
+		r.logger.Error("getOtherSlavesList r.services.User.GetSlavesList Router: ", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}

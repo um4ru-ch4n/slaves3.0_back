@@ -8,6 +8,8 @@ import (
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 const (
@@ -21,6 +23,7 @@ const (
 func (r *Router) hasAuth(c *gin.Context) {
 	header := c.GetHeader(authorizationHeader)
 	if header == "" {
+		r.logger.Error("hasAuth c.GetHeader middleware: Empty 'Authorization' header")
 		c.AbortWithStatusJSON(http.StatusUnauthorized, "Empty 'Authorization' header")
 		return
 	}
@@ -28,11 +31,13 @@ func (r *Router) hasAuth(c *gin.Context) {
 	headerParts := strings.Split(header, " ")
 
 	if len(headerParts) != 2 || headerParts[0] != tokenType {
+		r.logger.Error("hasAuth middleware: Invalid 'Authorization' header")
 		c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid 'Authorization' header")
 		return
 	}
 
 	if len(headerParts[1]) == 0 {
+		r.logger.Error("hasAuth middleware: Access token is empty")
 		c.AbortWithStatusJSON(http.StatusUnauthorized, "Access token is empty")
 		return
 	}
@@ -46,6 +51,7 @@ func (r *Router) userIdentity(c *gin.Context) {
 	userVkInfo, err := r.services.User.GetUserVkInfo(token)
 
 	if err != nil {
+		r.logger.Error("userIdentity r.services.User.GetUserVkInfo middleware: ", zap.Error(err))
 		c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
 		return
 	}
@@ -58,9 +64,10 @@ func (r *Router) updateStatsHour(c *gin.Context) {
 
 	lastUpdate, err := r.services.User.GetLastUpdate(userVkInfo.Id)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Cause(err) == pgx.ErrNoRows {
 			c.Next()
 		} else {
+			r.logger.Error("updateStatsHour r.services.User.GetLastUpdate middleware: ", zap.Error(err))
 			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		}
 		return
@@ -72,6 +79,7 @@ func (r *Router) updateStatsHour(c *gin.Context) {
 	}
 
 	if err := r.services.User.UpdateUserInfo(userVkInfo.Id); err != nil {
+		r.logger.Error("updateStatsHour r.services.User.UpdateUserInfo middleware: ", zap.Error(err))
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -85,6 +93,7 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 	var oUserId oUserIdType
 
 	if err := c.ShouldBindJSON(&oUserId); err != nil {
+		r.logger.Error("updateStatsHourOther c.ShouldBindJSON middleware: ", zap.Error(err))
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -93,9 +102,10 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 
 	lastUpdate, err := r.services.User.GetLastUpdate(oUserId.UserId)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Cause(err) == pgx.ErrNoRows {
 			c.Next()
 		} else {
+			r.logger.Error("updateStatsHourOther r.services.User.GetLastUpdate middleware: ", zap.Error(err))
 			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		}
 		return
@@ -107,6 +117,7 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 	}
 
 	if err := r.services.User.UpdateUserInfo(oUserId.UserId); err != nil {
+		r.logger.Error("updateStatsHourOther r.services.User.UpdateUserInfo middleware: ", zap.Error(err))
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}

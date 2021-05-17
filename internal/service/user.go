@@ -273,7 +273,7 @@ func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
 	}
 
 	masterId, err := serv.repUserMaster.GetMaster(slaveId)
-	if err != nil && err != pgx.ErrNoRows {
+	if err != nil && errors.Cause(err) == pgx.ErrNoRows {
 		return errors.Wrap(err, "BuySlave serv.repUserMaster.GetMaster AuthService")
 	}
 
@@ -333,7 +333,7 @@ func (serv *AuthService) SaleSlave(userId int32, slaveId int32) error {
 	}
 
 	masterId, err := serv.repUserMaster.GetMaster(slaveId)
-	if err != nil && err != pgx.ErrNoRows {
+	if err != nil && errors.Cause(err) == pgx.ErrNoRows {
 		return errors.Wrap(err, "SaleSlave serv.repUserMaster.GetMaster AuthService")
 	}
 
