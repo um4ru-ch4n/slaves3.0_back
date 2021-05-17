@@ -1,2 +1,2 @@
 db:
-    ssl: "require" # disable for localhost
+    ssl: "disable" # disable for localhost, require for heroku

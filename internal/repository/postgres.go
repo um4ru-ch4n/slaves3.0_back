@@ -5,6 +5,7 @@ import (
 
 	"github.com/00mrx00/slaves3.0_back/internal/config"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 )
 
 func NewPostgresDB(cfg config.DbConfig) (*pgxpool.Pool, error) {
@@ -14,12 +15,12 @@ func NewPostgresDB(cfg config.DbConfig) (*pgxpool.Pool, error) {
 	db, err := pgxpool.Connect(context.Background(), baseconn)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "db connect failed")
 	}
 
 	err = db.Ping(context.Background())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "db ping failed")
 	}
 
 	return db, nil
@@ -107,7 +108,7 @@ func CreateSchema(db *pgxpool.Pool) error {
         ALTER TABLE public.user_master
             OWNER to postgres;`)
 
-	return err
+	return errors.Wrap(err, "create initial schema exec failed")
 }
 
 func CreateUserTypes(db *pgxpool.Pool) error {
@@ -118,7 +119,7 @@ func CreateUserTypes(db *pgxpool.Pool) error {
             ('slave'), 
             ('defender');`)
 
-	return err
+	return errors.Wrap(err, "create initial userTypes failed")
 }
 
 func CreateFetter(db *pgxpool.Pool) error {
@@ -132,5 +133,5 @@ func CreateFetter(db *pgxpool.Pool) error {
             ('immortal', 16, 720), 
             ('legendary', 18, 1440);`)
 
-	return err
+	return errors.Wrap(err, "create initial fetter failed")
 }

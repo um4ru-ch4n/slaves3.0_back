@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -17,11 +18,11 @@ func GetRouterConfig() (RouterConfig, error) {
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		return RouterConfig{}, err
+		return RouterConfig{}, errors.Wrap(err, "failed to read yml router config")
 	}
 
 	if err := godotenv.Load(); err != nil {
-		return RouterConfig{}, err
+		return RouterConfig{}, errors.Wrap(err, "failed to load env router")
 	}
 
 	return RouterConfig{

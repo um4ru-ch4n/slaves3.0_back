@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -22,11 +23,11 @@ func GetDbConfig() (DbConfig, error) {
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		return DbConfig{}, err
+		return DbConfig{}, errors.Wrap(err, "failed to read yml db config")
 	}
 
 	if err := godotenv.Load(); err != nil {
-		return DbConfig{}, err
+		return DbConfig{}, errors.Wrap(err, "failed to load env db")
 	}
 
 	return DbConfig{

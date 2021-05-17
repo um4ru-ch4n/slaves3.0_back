@@ -6,6 +6,7 @@ import (
 
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 )
 
 type AuthPostgres struct {
@@ -62,7 +63,7 @@ func (rep *AuthPostgres) CreateUser(userId int32, userType, fio, photo string) (
 		&user.FetterTime,
 		&fetterId)
 	if err != nil {
-		return domain.User{}, err
+		return domain.User{}, errors.Wrap(err, "CreateUser queryRow AuthPostgres")
 	}
 
 	err = rep.db.QueryRow(context.Background(),
@@ -77,7 +78,7 @@ func (rep *AuthPostgres) CreateUser(userId int32, userType, fio, photo string) (
 		&user.FetterPrice,
 		&user.FetterDuration)
 
-	return user, err
+	return user, errors.Wrap(err, "select fetter queryRow AuthPostgres")
 }
 
 func (rep *AuthPostgres) GetUser(id int32) (domain.User, error) {
@@ -124,7 +125,7 @@ func (rep *AuthPostgres) GetUser(id int32) (domain.User, error) {
 		&user.FetterPrice,
 		&user.FetterDuration)
 
-	return user, err
+	return user, errors.Wrap(err, "GetUser queryRow AuthPostgres")
 }
 
 func (rep *AuthPostgres) GetUserType(userId int32) (string, error) {
@@ -138,7 +139,7 @@ func (rep *AuthPostgres) GetUserType(userId int32) (string, error) {
 		WHERE id = $1
 		LIMIT 1;`, userId).Scan(&usType)
 
-	return usType, err
+	return usType, errors.Wrap(err, "GetUserType queryRow AuthPostgres")
 }
 
 func (rep *AuthPostgres) GetFriendsInfo(ids []int) (map[int32]domain.FriendInfo, error) {
@@ -163,7 +164,7 @@ func (rep *AuthPostgres) GetFriendsInfo(ids []int) (map[int32]domain.FriendInfo,
 		WHERE u.id = ANY ($1);`, ids)
 
 	if err != nil {
-		return friendsInfo, err
+		return friendsInfo, errors.Wrap(err, "GetFriendsInfo query AuthPostgres")
 	}
 
 	defer rows.Close()
@@ -183,13 +184,13 @@ func (rep *AuthPostgres) GetFriendsInfo(ids []int) (map[int32]domain.FriendInfo,
 			&fr.DefenderLevel)
 
 		if err != nil {
-			return friendsInfo, err
+			return friendsInfo, errors.Wrap(err, "GetFriendsInfo scan AuthPostgres")
 		}
 
 		friendsInfo[fr.Id] = fr
 	}
 
-	return friendsInfo, err
+	return friendsInfo, nil
 }
 
 func (rep *AuthPostgres) SlaveBuyUpdateInfo(newData domain.SlaveBuyUpdateInfo) error {
@@ -203,7 +204,7 @@ func (rep *AuthPostgres) SlaveBuyUpdateInfo(newData domain.SlaveBuyUpdateInfo) e
 		newData.UserType,
 		newData.SlaveId)
 
-	return err
+	return errors.Wrap(err, "SlaveBuyUpdateInfo exec AuthPostgres")
 }
 
 func (rep *AuthPostgres) UserBalanceUpdate(userId int32, balance int64, gold int32) error {
@@ -217,14 +218,14 @@ func (rep *AuthPostgres) UserBalanceUpdate(userId int32, balance int64, gold int
 		gold,
 		userId)
 
-	return err
+	return errors.Wrap(err, "UserBalanceUpdate exec AuthPostgres")
 }
 
 func (rep *AuthPostgres) SetFetterTime(userId int32, fetterTime time.Time) error {
 	_, err := rep.db.Exec(context.Background(),
 		"UPDATE users SET fetter_time = $1 WHERE id = $2", fetterTime, userId)
 
-	return err
+	return errors.Wrap(err, "SetFetterTime exec AuthPostgres")
 }
 
 func (rep *AuthPostgres) GetFetterTime(userId int32) (time.Time, error) {
@@ -233,7 +234,7 @@ func (rep *AuthPostgres) GetFetterTime(userId int32) (time.Time, error) {
 		`SELECT fetter_time FROM users WHERE id = $1 LIMIT 1;`,
 		userId).Scan(&fetterTime)
 
-	return fetterTime, err
+	return fetterTime, errors.Wrap(err, "SetFetterTime queryRow AuthPostgres")
 }
 
 func (rep *AuthPostgres) GetUserBalance(userId int32) (int64, int32, error) {
@@ -242,7 +243,7 @@ func (rep *AuthPostgres) GetUserBalance(userId int32) (int64, int32, error) {
 	err := rep.db.QueryRow(context.Background(), `SELECT balance, gold FROM users WHERE id = $1 LIMIT 1;`,
 		userId).Scan(&balance, &gold)
 
-	return balance, gold, err
+	return balance, gold, errors.Wrap(err, "GetUserBalance queryRow AuthPostgres")
 }
 
 func (rep *AuthPostgres) GetRatingBySlavesCount(limit int32) ([]domain.RatingSlavesCount, error) {
@@ -273,7 +274,7 @@ func (rep *AuthPostgres) GetRatingBySlavesCount(limit int32) ([]domain.RatingSla
 		LIMIT $1 ;`, limit)
 
 	if err != nil {
-		return ratingSlavesCount, err
+		return ratingSlavesCount, errors.Wrap(err, "GetRatingBySlavesCount query AuthPostgres")
 	}
 
 	defer rows.Close()
@@ -291,20 +292,20 @@ func (rep *AuthPostgres) GetRatingBySlavesCount(limit int32) ([]domain.RatingSla
 			&rs.FetterDuration)
 
 		if err != nil {
-			return ratingSlavesCount, err
+			return ratingSlavesCount, errors.Wrap(err, "GetUserBalance rows.Scan AuthPostgres")
 		}
 
 		ratingSlavesCount = append(ratingSlavesCount, rs)
 	}
 
-	return ratingSlavesCount, err
+	return ratingSlavesCount, nil
 }
 
 func (rep *AuthPostgres) SetJobName(slaveId int32, jobName string) error {
 	_, err := rep.db.Exec(context.Background(),
 		"UPDATE users SET job_name = $1 WHERE id = $2;", jobName, slaveId)
 
-	return err
+	return errors.Wrap(err, "SetJobName exec AuthPostgres")
 }
 
 func (rep *AuthPostgres) GetLastUpdate(userId int32) (time.Time, error) {
@@ -313,14 +314,14 @@ func (rep *AuthPostgres) GetLastUpdate(userId int32) (time.Time, error) {
 	err := rep.db.QueryRow(context.Background(),
 		"SELECT last_update FROM users WHERE id = $1 LIMIT 1;", userId).Scan(&lastUpdate)
 
-	return lastUpdate, err
+	return lastUpdate, errors.Wrap(err, "GetLastUpdate queryRow AuthPostgres")
 }
 
 func (rep *AuthPostgres) UpdateUserBalanceHour(userId int32, balance int64) error {
 	_, err := rep.db.Exec(context.Background(),
 		"UPDATE users SET balance = $1, last_update = NOW() WHERE id = $2;", balance, userId)
 
-	return err
+	return errors.Wrap(err, "UpdateUserBalanceHour exec AuthPostgres")
 }
 
 func (rep *AuthPostgres) UpdateSlaveHour(slaveInfo domain.SlaveInfoForUpdate) error {
@@ -328,5 +329,5 @@ func (rep *AuthPostgres) UpdateSlaveHour(slaveInfo domain.SlaveInfoForUpdate) er
 		"UPDATE users SET slave_level = $1, money_quantity = $2 WHERE id = $3;",
 		slaveInfo.SlaveLevel, slaveInfo.MoneyQuantity, slaveInfo.Id)
 
-	return err
+	return errors.Wrap(err, "UpdateSlaveHour exec AuthPostgres")
 }
