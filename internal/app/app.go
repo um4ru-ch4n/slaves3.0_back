@@ -37,13 +37,7 @@ func Run() {
 	service := service.NewService(rep)
 	router := routes.NewRouter(service)
 
-	routerConfig, err := config.GetRouterConfig()
-
-	if err != nil {
-		logger.Fatal("Failed to get Router config: ", zap.Error(err))
-	}
-
-	if err := router.InitRoutes().Run(routerConfig.Port); err != nil {
+	if err := router.InitRoutes().Run(); err != nil {
 		logger.Fatal("Failed to initialize router: ", zap.Error(err))
 	}
 
