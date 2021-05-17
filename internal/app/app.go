@@ -1,10 +1,11 @@
 package app
 
 import (
-	"context"
 	"fmt"
+	"os"
 
 	"github.com/00mrx00/slaves3.0_back/internal/config"
+	"github.com/00mrx00/slaves3.0_back/internal/logger"
 	"github.com/00mrx00/slaves3.0_back/internal/repository"
 	"github.com/00mrx00/slaves3.0_back/internal/routes"
 	"github.com/00mrx00/slaves3.0_back/internal/service"
@@ -12,23 +13,25 @@ import (
 )
 
 func Run() {
-	logger, _ := zap.NewProduction()
-	defer logger.Sync()
-	sugar := logger.Sugar()
+	logger, err := logger.NewLogger()
+	if err != nil {
+		fmt.Println("logger create failed: ", err)
+		os.Exit(1)
+	}
 
 	dbConfig, err := config.GetDbConfig()
 
 	if err != nil {
-		sugar.Errorf("Failed to get DB config db: %s", err.Error())
+		logger.Fatal("Failed to get DB config db: ", zap.Error(err))
 	}
 
 	db, err := repository.NewPostgresDB(dbConfig)
 
 	if err != nil {
-		sugar.Errorf("Failed to connect DB: %s", err.Error())
+		logger.Fatal("Failed to connect DB: ", zap.Error(err))
 	}
 
-	defer db.Close(context.Background())
+	defer db.Close()
 
 	rep := repository.NewRepository(db)
 	service := service.NewService(rep)
@@ -37,13 +40,12 @@ func Run() {
 	routerConfig, err := config.GetRouterConfig()
 
 	if err != nil {
-		sugar.Errorf("Failed to get Router config: %s", err.Error())
+		logger.Fatal("Failed to get Router config: ", zap.Error(err))
 	}
 
-	if err := router.InitRoutes().Run(); err != nil {
-		fmt.Println(routerConfig)
-		sugar.Errorf("Failed to initialize router: %s", err.Error())
+	if err := router.InitRoutes().Run(routerConfig.Port); err != nil {
+		logger.Fatal("Failed to initialize router: ", zap.Error(err))
 	}
 
-	sugar.Info("Slaves 3.0 successfully started...")
+	logger.Info("Slaves 3.0 successfully started...")
 }

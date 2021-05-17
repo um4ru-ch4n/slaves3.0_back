@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"math"
 	"time"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/00mrx00/slaves3.0_back/internal/repository"
 	"github.com/SevereCloud/vksdk/v2/api"
 	"github.com/jackc/pgx/v4"
+	"github.com/pkg/errors"
 )
 
 const RATING_LIMIT = 100
@@ -28,19 +28,19 @@ func NewAuthService(repAuth repository.User, repUserMaster repository.UserMaster
 func (serv *AuthService) GetUser(id int32) (domain.User, error) {
 	user, err := serv.repAuth.GetUser(id)
 
-	return user, err
+	return user, errors.Wrap(err, "GetUser serv.repAuth.GetUser AuthService")
 }
 
 func (serv *AuthService) CreateUser(userId int32, userType, fio, photo string) (domain.UserFull, error) {
 
 	user, err := serv.repAuth.CreateUser(userId, userType, fio, photo)
 	if err != nil {
-		return domain.UserFull{}, err
+		return domain.UserFull{}, errors.Wrap(err, "CreateUser serv.repAuth.CreateUser AuthService")
 	}
 
 	userFull, err := serv.setAddFields(user)
 
-	return userFull, err
+	return userFull, errors.Wrap(err, "CreateUser serv.setAddFields AuthService")
 }
 
 func (serv *AuthService) GetUserVkInfo(token string) (domain.UserVkInfo, error) {
@@ -50,7 +50,7 @@ func (serv *AuthService) GetUserVkInfo(token string) (domain.UserVkInfo, error) 
 	})
 
 	if err != nil {
-		return domain.UserVkInfo{}, err
+		return domain.UserVkInfo{}, errors.Wrap(err, "GetUserVkInfo vk.UsersGet AuthService")
 	}
 
 	return domain.UserVkInfo{
@@ -68,7 +68,7 @@ func (serv *AuthService) GetUsersVkInfo(token string, usersIds []int32) ([]domai
 	})
 
 	if err != nil {
-		return []domain.UserVkInfo{}, err
+		return []domain.UserVkInfo{}, errors.Wrap(err, "GetUsersVkInfo vk.UsersGet AuthService")
 	}
 
 	users := make([]domain.UserVkInfo, len(usersIds))
@@ -87,7 +87,7 @@ func (serv *AuthService) GetUsersVkInfo(token string, usersIds []int32) ([]domai
 func (serv *AuthService) GetUserIncome(userId int32) (int64, error) {
 	slaves, err := serv.repUserMaster.GetSlaves(userId)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "GetUserIncome serv.repUserMaster.GetSlaves AuthService")
 	}
 
 	var income int64
@@ -102,7 +102,7 @@ func (serv *AuthService) GetUserIncome(userId int32) (int64, error) {
 func (serv *AuthService) GetUserFull(id int32) (domain.UserFull, error) {
 	user, err := serv.repAuth.GetUser(id)
 	if err != nil {
-		return domain.UserFull{}, err
+		return domain.UserFull{}, errors.Wrap(err, "GetUserFull serv.repAuth.GetUser AuthService")
 	}
 
 	userFull, err := serv.setAddFields(user)
@@ -113,7 +113,7 @@ func (serv *AuthService) GetUserFull(id int32) (domain.UserFull, error) {
 func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error) {
 	slaves, err := serv.repUserMaster.GetSlaves(user.Id)
 	if err != nil {
-		return domain.UserFull{}, err
+		return domain.UserFull{}, errors.Wrap(err, "setAddFields  serv.repUserMaster.GetSlaves AuthService")
 	}
 
 	slavesCount := int32(len(slaves))
@@ -127,14 +127,8 @@ func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error)
 	profit := GetSlaveProfit(user.SlaveLevel)
 	damage := GetDefenderDamage(user.DefenderLevel)
 
-	masterId, err := serv.repUserMaster.GetMaster(user.Id)
-	if err != nil && err != pgx.ErrNoRows {
-		return domain.UserFull{}, err
-	}
-
 	userFull := domain.UserFull{
 		Id:              user.Id,
-		MasterId:        masterId,
 		Fio:             user.Fio,
 		Photo:           user.Photo,
 		Balance:         user.Balance,
@@ -172,7 +166,7 @@ func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, erro
 
 	ids, err := vk.FriendsGet(api.Params{})
 	if err != nil {
-		return []domain.FriendInfo{}, err
+		return []domain.FriendInfo{}, errors.Wrap(err, "GetFriendsList vk.FriendsGet AuthService")
 	}
 
 	res, err := vk.UsersGet(api.Params{
@@ -180,12 +174,12 @@ func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, erro
 		"user_ids": ids.Items,
 	})
 	if err != nil {
-		return []domain.FriendInfo{}, err
+		return []domain.FriendInfo{}, errors.Wrap(err, "GetFriendsList vk.UsersGet AuthService")
 	}
 
 	friends, err := serv.repAuth.GetFriendsInfo(ids.Items)
 	if err != nil {
-		return []domain.FriendInfo{}, err
+		return []domain.FriendInfo{}, errors.Wrap(err, "GetFriendsList serv.repAuth.GetFriendsInfo AuthService")
 	}
 
 	mastersIds := make([]int32, 0, len(friends))
@@ -204,7 +198,7 @@ func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, erro
 		})
 
 		if err != nil {
-			return []domain.FriendInfo{}, err
+			return []domain.FriendInfo{}, errors.Wrap(err, "GetFriendsList vk.UsersGet AuthService")
 		}
 
 		for i, _ := range mst {
@@ -252,51 +246,51 @@ func (serv *AuthService) GetFriendsList(token string) ([]domain.FriendInfo, erro
 
 func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
 	if userId == slaveId {
-		return errors.New("Can't buy yourself")
+		return errors.Wrap(errors.New("Can't buy yourself"), "BuySlave userId == slaveId AuthService")
 	}
 
 	user, err := serv.repAuth.GetUser(userId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "BuySlave get user info serv.repAuth.GetUser AuthService")
 	}
 
 	slave, err := serv.repAuth.GetUser(slaveId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "BuySlave get slave info serv.repAuth.GetUser AuthService")
 	}
 
 	slaveHasFetter := GetHasFetter(slave.FetterTime, slave.FetterDuration)
 
 	if slaveHasFetter {
-		return errors.New("Slave has fetter, you can't buy him")
+		return errors.Wrap(errors.New("Slave has fetter, you can't buy him"), "BuySlave slave has fetter AuthService")
 	}
 
 	slavePurchasePriceSm := GetUserPurchasePriceSm(slave.SlaveLevel)
 	slavePurchasePriceGm := GetUserPurchasePriceGm(slave.DefenderLevel)
 
 	if user.Balance < slavePurchasePriceSm || user.Gold < slavePurchasePriceGm {
-		return errors.New("Not enough money to buy a slave")
+		return errors.Wrap(errors.New("Not enough money to buy a slave"), "BuySlave user has enough money AuthService")
 	}
 
 	masterId, err := serv.repUserMaster.GetMaster(slaveId)
 	if err != nil && err != pgx.ErrNoRows {
-		return err
+		return errors.Wrap(err, "BuySlave serv.repUserMaster.GetMaster AuthService")
 	}
 
 	if masterId != 0 {
 		if masterId == userId {
-			return errors.New("Can't buy your slave")
+			return errors.Wrap(errors.New("Can't buy your slave"), "BuySlave masterId == userID AuthService")
 		} else {
 			balance, gold, err := serv.repAuth.GetUserBalance(masterId)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "BuySlave serv.repAuth.GetUserBalance AuthService")
 			}
 
 			if err := serv.repAuth.UserBalanceUpdate(
 				masterId,
 				balance+slavePurchasePriceSm,
 				gold+slavePurchasePriceGm); err != nil {
-				return err
+				return errors.Wrap(err, "BuySlave serv.repAuth.UserBalanceUpdate master AuthService")
 			}
 		}
 	}
@@ -305,11 +299,11 @@ func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
 		userId,
 		user.Balance-slavePurchasePriceSm,
 		user.Gold-slavePurchasePriceGm); err != nil {
-		return err
+		return errors.Wrap(err, "BuySlave serv.repAuth.UserBalanceUpdate user AuthService")
 	}
 
 	if err := serv.repUserMaster.CreateOrUpdateSlave(slaveId, userId); err != nil {
-		return err
+		return errors.Wrap(err, "BuySlave serv.repUserMaster.CreateOrUpdateSlave AuthService")
 	}
 
 	if err := serv.repAuth.SlaveBuyUpdateInfo(domain.SlaveBuyUpdateInfo{
@@ -317,7 +311,7 @@ func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
 		JobName:  "",
 		UserType: "slave",
 	}); err != nil {
-		return err
+		return errors.Wrap(err, "BuySlave serv.repAuth.SlaveBuyUpdateInfo AuthService")
 	}
 
 	return nil
@@ -325,41 +319,41 @@ func (serv *AuthService) BuySlave(userId int32, slaveId int32) error {
 
 func (serv *AuthService) SaleSlave(userId int32, slaveId int32) error {
 	if userId == slaveId {
-		return errors.New("Can't sale yourself")
+		return errors.Wrap(errors.New("Can't sale yourself"), "SaleSlave userId == slaveId AuthService")
 	}
 
 	user, err := serv.repAuth.GetUser(userId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "SaleSlave serv.repAuth.GetUser user AuthService")
 	}
 
 	slave, err := serv.repAuth.GetUser(slaveId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "SaleSlave serv.repAuth.GetUser slave AuthService")
 	}
 
 	masterId, err := serv.repUserMaster.GetMaster(slaveId)
 	if err != nil && err != pgx.ErrNoRows {
-		return err
+		return errors.Wrap(err, "SaleSlave serv.repUserMaster.GetMaster AuthService")
 	}
 
 	if masterId == 0 {
-		return errors.New("Can't sale free slave")
+		return errors.Wrap(errors.New("Can't sale free slave"), "SaleSlave masterId == 0 slave AuthService")
 	}
 
 	if masterId != userId {
-		return errors.New("Can't sale other's slave")
+		return errors.Wrap(err, "SaleSlave masterId != userId AuthService")
 	}
 
 	if err := serv.repAuth.UserBalanceUpdate(
 		userId,
 		user.Balance+GetUserSalePriceSm(slave.SlaveLevel),
 		user.Gold+GetUserSalePriceGm(slave.DefenderLevel)); err != nil {
-		return err
+		return errors.Wrap(err, "SaleSlave serv.repAuth.UserBalanceUpdate AuthService")
 	}
 
 	if err := serv.repUserMaster.SaleSlave(slaveId); err != nil {
-		return err
+		return errors.Wrap(err, "SaleSlave serv.repUserMaster.SaleSlave AuthService")
 	}
 
 	if err := serv.repAuth.SlaveBuyUpdateInfo(domain.SlaveBuyUpdateInfo{
@@ -367,7 +361,7 @@ func (serv *AuthService) SaleSlave(userId int32, slaveId int32) error {
 		JobName:  "",
 		UserType: "simp",
 	}); err != nil {
-		return err
+		return errors.Wrap(err, "SaleSlave serv.repAuth.SlaveBuyUpdateInfo AuthService")
 	}
 
 	return nil
@@ -376,7 +370,7 @@ func (serv *AuthService) SaleSlave(userId int32, slaveId int32) error {
 func (serv *AuthService) GetRatingBySlavesCount() ([]domain.RatingSlavesCount, error) {
 	ratingSlavesCount, err := serv.repAuth.GetRatingBySlavesCount(RATING_LIMIT)
 	if err != nil {
-		return ratingSlavesCount, err
+		return ratingSlavesCount, errors.Wrap(err, "GetRatingBySlavesCount serv.repAuth.GetRatingBySlavesCount AuthService")
 	}
 
 	for i, _ := range ratingSlavesCount {
@@ -391,7 +385,7 @@ func (serv *AuthService) GetRatingBySlavesCount() ([]domain.RatingSlavesCount, e
 func (serv *AuthService) GetSlavesList(userId int32) ([]domain.SlavesListInfo, error) {
 	slavesList, err := serv.repUserMaster.GetSlaves(userId)
 	if err != nil {
-		return slavesList, err
+		return slavesList, errors.Wrap(err, "GetSlavesList serv.repUserMaster.GetSlaves AuthService")
 	}
 
 	for i, _ := range slavesList {
@@ -399,37 +393,42 @@ func (serv *AuthService) GetSlavesList(userId int32) ([]domain.SlavesListInfo, e
 		slavesList[i].Profit = int64(GetSlaveProfit(slavesList[i].SlaveLevel))
 	}
 
-	return slavesList, err
+	return slavesList, nil
 }
 
 func (serv *AuthService) SetJobName(userId, slaveId int32, jobName string) error {
 	masterId, err := serv.repUserMaster.GetMaster(slaveId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "SetJobName serv.repUserMaster.GetMaster AuthService")
 	}
 
 	if masterId != userId {
-		return errors.New("You can't set job name for other's slave")
+		return errors.Wrap(errors.New("You can't set job name for other's slave"), "SetJobName masterId != userId AuthService")
 	}
 
 	err = serv.repAuth.SetJobName(slaveId, jobName)
 
-	return err
+	return errors.Wrap(err, "SetJobName serv.repAuth.SetJobName AuthService")
 }
 
 func (serv *AuthService) GetLastUpdate(userId int32) (time.Time, error) {
-	return serv.repAuth.GetLastUpdate(userId)
+	time, err := serv.repAuth.GetLastUpdate(userId)
+	if err != nil {
+		return time, errors.Wrap(err, "GetLastUpdate serv.repAuth.GetLastUpdate AuthService")
+	}
+
+	return time, nil
 }
 
 func (serv *AuthService) UpdateUserInfo(userId int32) error {
 	user, err := serv.repAuth.GetUser(userId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "UpdateUserInfo serv.repAuth.GetUser AuthService")
 	}
 
 	slaves, err := serv.repUserMaster.GetSlavesForUpdate(userId)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "UpdateUserInfo serv.repUserMaster.GetSlavesForUpdate AuthService")
 	}
 
 	var balancePerTime, slaveMoneyToUpdate, incBalance int64
@@ -463,7 +462,7 @@ func (serv *AuthService) UpdateUserInfo(userId int32) error {
 		timeSinceCopy = timeSinceLUpd
 
 		if err := serv.repAuth.UpdateSlaveHour(slaves[i]); err != nil {
-			return err
+			return errors.Wrap(err, "UpdateUserInfo serv.repAuth.UpdateSlaveHour AuthService")
 		}
 	}
 

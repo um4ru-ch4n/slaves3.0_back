@@ -4,14 +4,15 @@ import (
 	"context"
 
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/pkg/errors"
 )
 
 type UserMasterPostgres struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewUserMasterPostgres(db *pgx.Conn) *UserMasterPostgres {
+func NewUserMasterPostgres(db *pgxpool.Pool) *UserMasterPostgres {
 	return &UserMasterPostgres{db: db}
 }
 
@@ -27,7 +28,7 @@ func (rep *UserMasterPostgres) CreateOrUpdateSlave(userId int32, masterId int32)
 		userId,
 		masterId)
 
-	return err
+	return errors.Wrap(err, "CreateOrUpdateSlave exec UserMasterPostgres")
 }
 
 func (rep *UserMasterPostgres) GetMaster(userId int32) (int32, error) {
@@ -36,7 +37,7 @@ func (rep *UserMasterPostgres) GetMaster(userId int32) (int32, error) {
 		"SELECT master_id FROM user_master WHERE user_id = $1 LIMIT 1;",
 		userId).Scan(&masterId)
 
-	return masterId, err
+	return masterId, errors.Wrap(err, "GetMaster queryRow UserMasterPostgres")
 }
 
 func (rep *UserMasterPostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo, error) {
@@ -60,7 +61,7 @@ func (rep *UserMasterPostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo,
 		WHERE um.master_id = $1;`, userId)
 
 	if err != nil {
-		return slaves, err
+		return slaves, errors.Wrap(err, "GetSlaves query UserMasterPostgres")
 	}
 
 	defer rows.Close()
@@ -79,7 +80,7 @@ func (rep *UserMasterPostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo,
 			&sl.SlaveLevel,
 			&sl.DefenderLevel)
 		if err != nil {
-			return slaves, err
+			return slaves, errors.Wrap(err, "GetSlaves rows.Scan UserMasterPostgres")
 		}
 		slaves = append(slaves, sl)
 	}
@@ -90,7 +91,7 @@ func (rep *UserMasterPostgres) GetSlaves(userId int32) ([]domain.SlavesListInfo,
 func (rep *UserMasterPostgres) SaleSlave(slaveId int32) error {
 	_, err := rep.db.Exec(context.Background(), "DELETE FROM user_master WHERE user_id = $1;", slaveId)
 
-	return err
+	return errors.Wrap(err, "SaleSlave exec UserMasterPostgres")
 }
 
 func (rep *UserMasterPostgres) GetSlavesForUpdate(userId int32) ([]domain.SlaveInfoForUpdate, error) {
@@ -107,7 +108,7 @@ func (rep *UserMasterPostgres) GetSlavesForUpdate(userId int32) ([]domain.SlaveI
 		WHERE um.master_id = $1;`, userId)
 
 	if err != nil {
-		return slaves, err
+		return slaves, errors.Wrap(err, "GetSlavesForUpdate query UserMasterPostgres")
 	}
 
 	defer rows.Close()
@@ -121,7 +122,7 @@ func (rep *UserMasterPostgres) GetSlavesForUpdate(userId int32) ([]domain.SlaveI
 			&sl.SlaveLevel,
 			&sl.MoneyQuantity)
 		if err != nil {
-			return slaves, err
+			return slaves, errors.Wrap(err, "GetSlavesForUpdate rows.Scan UserMasterPostgres")
 		}
 
 		slaves = append(slaves, sl)
