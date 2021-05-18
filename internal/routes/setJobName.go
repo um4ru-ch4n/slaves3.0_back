@@ -7,6 +7,7 @@ import (
 
 	"github.com/00mrx00/slaves3.0_back/internal/domain"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
 type JobName struct {
@@ -20,7 +21,7 @@ func (r *Router) setJobName(c *gin.Context) {
 	var jobName JobName
 
 	if err := c.ShouldBindJSON(&jobName); err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, errors.Cause(err).Error())
 		return
 	}
 
@@ -38,7 +39,7 @@ func (r *Router) setJobName(c *gin.Context) {
 	}
 
 	if err := r.services.User.SetJobName(userVkInfo.Id, jobName.SlaveId, trimJobName); err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
 		return
 	}
 
