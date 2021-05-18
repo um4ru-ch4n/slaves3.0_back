@@ -100,12 +100,16 @@ func (rep *AuthPostgres) GetUser(id int32) (domain.User, error) {
 			u.fetter_time, 
 			f.name, 
 			f.price, 
-			f.duration 
+			f.duration, 
+			CASE WHEN um.master_id is NULL THEN 0 ELSE um.master_id END AS master_id, 
+			CASE WHEN master_id is NULL THEN '' ELSE (SELECT us.fio FROM users us WHERE us.id = um.master_id) END AS master_fio 
 		FROM users u 
 		INNER JOIN user_type ut 
 			ON ut.id = u.user_type 
 		INNER JOIN fetter f 
 			ON f.id = u.fetter_type 
+		LEFT JOIN user_master um 
+			ON um.user_id = u.id 
 		WHERE u.id = $1 
 		LIMIT 1;`, id).Scan(
 		&user.Id,
@@ -123,7 +127,9 @@ func (rep *AuthPostgres) GetUser(id int32) (domain.User, error) {
 		&user.FetterTime,
 		&user.FetterType,
 		&user.FetterPrice,
-		&user.FetterDuration)
+		&user.FetterDuration,
+		&user.MasterId,
+		&user.MasterFio)
 
 	return user, errors.Wrap(err, "GetUser queryRow AuthPostgres")
 }

@@ -156,6 +156,8 @@ func (serv *AuthService) setAddFields(user domain.User) (domain.UserFull, error)
 		FetterType:      user.FetterType,
 		FetterPrice:     user.FetterPrice,
 		FetterDuration:  user.FetterDuration,
+		MasterId:        user.MasterId,
+		MasterFio:       user.MasterFio,
 	}
 
 	return userFull, nil
