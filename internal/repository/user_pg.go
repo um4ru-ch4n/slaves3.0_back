@@ -337,3 +337,48 @@ func (rep *AuthPostgres) UpdateSlaveHour(slaveInfo domain.SlaveInfoForUpdate) er
 
 	return errors.Wrap(err, "UpdateSlaveHour exec AuthPostgres")
 }
+
+func (rep *AuthPostgres) SetFetter(userId int32, fetterType string) error {
+	_, err := rep.db.Exec(context.Background(),
+		`UPDATE 
+			users 
+		SET 
+			fetter_time = NOW(), 
+			fetter_type = (SELECT f.id FROM fetter f WHERE f.name = $1) 
+		WHERE id = $2;`,
+		fetterType, userId)
+
+	return errors.Wrap(err, "SetFetter exec AuthPostgres")
+}
+
+func (rep *AuthPostgres) GetFetterBuySlaveInfo(userId int32) (domain.FetterBuySlaveInfo, error) {
+	fetterBuySlaveInfo := domain.FetterBuySlaveInfo{}
+
+	err := rep.db.QueryRow(context.Background(),
+		`SELECT
+			u.fetter_time, 
+			f.duration, 
+			f.price, 
+			u.slave_level, 
+			u.defender_level 
+		FROM users u 
+		INNER JOIN fetter f 
+			ON f.id = u.fetter_type 
+		WHERE u.id = $1 LIMIT 1;`, userId).Scan(
+		&fetterBuySlaveInfo.FetterTime,
+		&fetterBuySlaveInfo.FetterDuration,
+		&fetterBuySlaveInfo.FetterPrice,
+		&fetterBuySlaveInfo.SlaveLevel,
+		&fetterBuySlaveInfo.DefenderLevel)
+
+	return fetterBuySlaveInfo, errors.Wrap(err, "GetFetterInfo queryRow AuthPostgres")
+}
+
+func (rep *AuthPostgres) GetFetterPrice(name string) (int32, error) {
+	var price int32
+
+	err := rep.db.QueryRow(context.Background(),
+		"SELECT price FROM fetter WHERE name = $1 LIMIT 1;", name).Scan(&price)
+
+	return price, errors.Wrap(err, "GetFetterPrice queryRow AuthPostgres")
+}

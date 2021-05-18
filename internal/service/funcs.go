@@ -40,7 +40,7 @@ func GetUserPurchasePriceGm(defenderLevel int32) int32 {
 		return 0
 	}
 	defLvlFl := float64(defenderLevel)
-	return int32(math.Round(defLvlFl * math.Pow(1.1, defLvlFl-2)))
+	return int32(math.Round(100 * math.Pow(1.1, defLvlFl-2)))
 }
 
 func GetUserSalePriceSm(slaveLevel int32) int64 {
@@ -56,9 +56,30 @@ func GetUserSalePriceGm(defenderLevel int32) int32 {
 		return 0
 	}
 	defLvlFl := float64(defenderLevel - 1)
-	return int32(math.Round((defLvlFl * math.Pow(1.1, defLvlFl-2) * 0.8)))
+	return int32(math.Round((100 * math.Pow(1.1, defLvlFl-2) * 0.8)))
 }
 
 func GetHasFetter(fetterTime time.Time, duration int32) bool {
 	return int32(time.Since(fetterTime).Minutes()) < duration
+}
+
+func GetCanBuyFetter(fetterTime time.Time, fetterDuration int32) bool {
+	// TODO: write a get cooldown algorithm
+	cooldown := fetterDuration
+
+	return int32(math.Round(time.Since(fetterTime).Minutes())) > (fetterDuration + cooldown)
+}
+
+func GetFetterPrice(fetterType string, fetterPrice, slaveLevel, defenderLevel int32) (int64, int32) {
+	lvl := float64(slaveLevel + defenderLevel)
+
+	if fetterType == "common" {
+		priceSm := int64(math.Round((math.Pow(lvl, 2)*(math.Pow(math.Log(lvl), 3)*math.Pow(lvl, 2)/2+1) + 1) * float64(fetterPrice) / 100))
+
+		return priceSm, 0
+	}
+
+	priceGm := int32(math.Round((100 * math.Pow(1.1, lvl-2) * float64(fetterPrice) / 100)))
+
+	return 0, priceGm
 }

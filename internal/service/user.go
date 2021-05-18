@@ -475,3 +475,57 @@ func (serv *AuthService) UpdateUserInfo(userId int32) error {
 
 	return nil
 }
+
+func (serv *AuthService) BuyFetter(userId, slaveId int32, fetterType string) error {
+	masterId, err := serv.repUserMaster.GetMaster(slaveId)
+	if err != nil {
+		return errors.Wrap(err, "BuyFetter serv.repUserMaster.GetMaster AuthService")
+	}
+
+	if userId != masterId {
+		return errors.Wrap(errors.New("You can't buy fetter for other's slave"), "BuyFetter userId != masterId AuthService")
+	}
+
+	fetterBuySlaveInfo, err := serv.repAuth.GetFetterBuySlaveInfo(slaveId)
+	if err != nil {
+		return errors.Wrap(err, "BuyFetter serv.repAuth.GetFetterInfo AuthService")
+	}
+
+	if !GetCanBuyFetter(fetterBuySlaveInfo.FetterTime, fetterBuySlaveInfo.FetterDuration) {
+		return errors.Wrap(errors.New("Can't buy fetter if slave already has fetter or fetter is now active"),
+			"BuyFetter !GetCanBuyFetter AuthService")
+	}
+
+	userBalance, userGold, err := serv.repAuth.GetUserBalance(userId)
+	if err != nil {
+		return errors.Wrap(err, "BuyFetter serv.repAuth.GetUserBalance AuthService")
+	}
+
+	fetterPrice, err := serv.repAuth.GetFetterPrice(fetterType)
+	if err != nil {
+		return errors.Wrap(err, "BuyFetter serv.repAuth.GetFetterPrice AuthService")
+	}
+
+	priceSm, priceGm := GetFetterPrice(
+		fetterType,
+		fetterPrice,
+		fetterBuySlaveInfo.SlaveLevel,
+		fetterBuySlaveInfo.DefenderLevel)
+
+	if userBalance < priceSm || userGold < priceGm {
+		return errors.Wrap(errors.New("Insufficient funds to buy fetter"), "BuyFetter userBalance < priceSm || userGold < priceGm AuthService")
+	}
+
+	err = serv.repAuth.UserBalanceUpdate(
+		userId,
+		userBalance-priceSm,
+		userGold-priceGm)
+
+	if err != nil {
+		return errors.Wrap(err, "BuyFetter serv.repAuth.UserBalanceUpdate AuthService")
+	}
+
+	err = serv.repAuth.SetFetter(slaveId, fetterType)
+
+	return errors.Wrap(err, "BuyFetter serv.repAuth.SetFetter AuthService")
+}

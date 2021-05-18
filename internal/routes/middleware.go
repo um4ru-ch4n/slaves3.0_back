@@ -94,7 +94,7 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&oUserId); err != nil {
 		r.logger.Error("updateStatsHourOther c.ShouldBindJSON middleware: ", zap.Error(err))
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, errors.Cause(err).Error())
 		return
 	}
 
@@ -106,7 +106,7 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 			c.Next()
 		} else {
 			r.logger.Error("updateStatsHourOther r.services.User.GetLastUpdate middleware: ", zap.Error(err))
-			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+			c.AbortWithStatusJSON(http.StatusInternalServerError, errors.Cause(err).Error())
 		}
 		return
 	}
@@ -118,7 +118,7 @@ func (r *Router) updateStatsHourOther(c *gin.Context) {
 
 	if err := r.services.User.UpdateUserInfo(oUserId.UserId); err != nil {
 		r.logger.Error("updateStatsHourOther r.services.User.UpdateUserInfo middleware: ", zap.Error(err))
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errors.Cause(err).Error())
 		return
 	}
 }

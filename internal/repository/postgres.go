@@ -126,12 +126,12 @@ func CreateFetter(db *pgxpool.Pool) error {
 	_, err := db.Exec(context.Background(),
 		`INSERT INTO fetter(name, price, duration) 
         VALUES 
-            ('common', 100, 120), 
-            ('uncommon', 10, 240), 
-            ('rare', 12, 360), 
-            ('epic', 14, 480), 
-            ('immortal', 16, 720), 
-            ('legendary', 18, 1440);`)
+            ('common', 80, 120), 
+            ('uncommon', 100, 240), 
+            ('rare', 120, 360), 
+            ('epic', 140, 480), 
+            ('immortal', 160, 720), 
+            ('legendary', 180, 1440);`)
 
 	return errors.Wrap(err, "create initial fetter failed")
 }
