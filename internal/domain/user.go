@@ -138,3 +138,11 @@ type SlaveInfoForUpdate struct {
 	SlaveLevel    int32  `json:"slave_level"`
 	MoneyQuantity int64  `json:"money_quantity"`
 }
+
+type FetterBuySlaveInfo struct {
+	FetterTime     time.Time `json:"fetter_time"`
+	FetterDuration int32     `json:"fetter_duration"`
+	FetterPrice    int32     `json:"fetter_price"`
+	SlaveLevel     int32     `json:"slave_level"`
+	DefenderLevel  int32     `json:"defender_level"`
+}

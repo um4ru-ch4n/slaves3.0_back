@@ -22,6 +22,9 @@ type User interface {
 	GetLastUpdate(userId int32) (time.Time, error)
 	UpdateUserBalanceHour(userId int32, balance int64) error
 	UpdateSlaveHour(slaveInfo domain.SlaveInfoForUpdate) error
+	SetFetter(userId int32, fetterType string) error
+	GetFetterBuySlaveInfo(userId int32) (domain.FetterBuySlaveInfo, error)
+	GetFetterPrice(name string) (int32, error)
 }
 
 type UserMaster interface {
