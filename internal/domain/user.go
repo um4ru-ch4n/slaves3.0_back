@@ -33,6 +33,8 @@ type User struct {
 	FetterType     string    `json:"fetter_type"`
 	FetterPrice    int64     `json:"fetter_price"`
 	FetterDuration int32     `json:"fetter_duration"`
+	MasterId       int32     `json:"master_id"`
+	MasterFio      string    `json:"master_fio"`
 }
 
 type UserFull struct {
@@ -64,6 +66,8 @@ type UserFull struct {
 	FetterType      string    `json:"fetter_type"`
 	FetterPrice     int64     `json:"fetter_price"`
 	FetterDuration  int32     `json:"fetter_duration"`
+	MasterId        int32     `json:"master_id"`
+	MasterFio       string    `json:"master_fio"`
 }
 
 type UserMaster struct {
