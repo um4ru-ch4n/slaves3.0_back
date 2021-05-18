@@ -380,5 +380,5 @@ func (rep *AuthPostgres) GetFetterPrice(name string) (int32, error) {
 	err := rep.db.QueryRow(context.Background(),
 		"SELECT price FROM fetter WHERE name = $1 LIMIT 1;", name).Scan(&price)
 
-	return price, err
+	return price, errors.Wrap(err, "GetFetterPrice queryRow AuthPostgres")
 }
