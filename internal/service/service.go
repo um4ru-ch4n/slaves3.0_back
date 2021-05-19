@@ -23,6 +23,8 @@ type User interface {
 	GetLastUpdate(userId int32) (time.Time, error)
 	UpdateUserInfo(userId int32) error
 	BuyFetter(userId, slaveId int32, fetterType string) error
+	Redeem(userId int32) error
+	GetMasterId(userId int32) (int32, error)
 }
 
 type Service struct {

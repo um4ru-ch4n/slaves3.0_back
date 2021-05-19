@@ -529,3 +529,70 @@ func (serv *AuthService) BuyFetter(userId, slaveId int32, fetterType string) err
 
 	return errors.Wrap(err, "BuyFetter serv.repAuth.SetFetter AuthService")
 }
+
+func (serv *AuthService) Redeem(userId int32) error {
+	masterId, err := serv.repUserMaster.GetMaster(userId)
+	if err != nil {
+		return errors.Wrap(err, "Redeem serv.repUserMaster.GetMaster AuthService")
+	}
+
+	redeemInfo, err := serv.repAuth.GetRedeemInfo(userId)
+	if err != nil {
+		return errors.Wrap(err, "Redeem serv.repAuth.GetRedeemInfo AuthService")
+	}
+
+	masterBalance, masterGold, err := serv.repAuth.GetUserBalance(masterId)
+	if err != nil {
+		return errors.Wrap(err, "Redeem serv.repAuth.GetUserBalance AuthService")
+	}
+
+	if GetHasFetter(redeemInfo.FetterTime, redeemInfo.FetterDuration) {
+		return errors.Wrap(errors.New("User has fetter, you can't redeem"), "Redeem hasFetter AuthService")
+	}
+
+	salePriceSm := GetUserSalePriceSm(redeemInfo.SlaveLevel)
+	salePriceGm := GetUserSalePriceGm(redeemInfo.DefenderLevel)
+
+	if redeemInfo.Balance < salePriceSm {
+		return errors.Wrap(errors.New("Not enough silver to redeem"), "Redeem balance < salePriceSm AuthService")
+	}
+
+	if redeemInfo.Gold < salePriceGm {
+		return errors.Wrap(errors.New("Not enough gold to redeem"), "Redeem gold < salePriceGm AuthService")
+	}
+
+	err = serv.repAuth.UserBalanceUpdate(
+		userId,
+		redeemInfo.Balance-salePriceSm,
+		redeemInfo.Gold-salePriceGm)
+	if err != nil {
+		return errors.Wrap(err, "Redeem serv.repAuth.UserBalanceUpdate user AuthService")
+	}
+
+	err = serv.repAuth.UserBalanceUpdate(
+		masterId,
+		masterBalance+salePriceSm,
+		masterGold+salePriceGm)
+	if err != nil {
+		return errors.Wrap(err, "Redeem serv.repAuth.UserBalanceUpdate master AuthService")
+	}
+
+	err = serv.repUserMaster.SaleSlave(userId)
+	if err != nil {
+		return errors.Wrap(err, "Redeem serv.repUserMaster.SaleSalve AuthService")
+	}
+
+	if err := serv.repAuth.SlaveBuyUpdateInfo(domain.SlaveBuyUpdateInfo{
+		SlaveId:  userId,
+		JobName:  "",
+		UserType: "simp",
+	}); err != nil {
+		return errors.Wrap(err, "Redeem serv.repAuth.SlaveBuyUpdateInfo AuthService")
+	}
+
+	return nil
+}
+
+func (serv *AuthService) GetMasterId(userId int32) (int32, error) {
+	return serv.repUserMaster.GetMaster(userId)
+}

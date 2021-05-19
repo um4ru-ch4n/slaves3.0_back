@@ -382,3 +382,28 @@ func (rep *AuthPostgres) GetFetterPrice(name string) (int32, error) {
 
 	return price, errors.Wrap(err, "GetFetterPrice queryRow AuthPostgres")
 }
+
+func (rep *AuthPostgres) GetRedeemInfo(userId int32) (domain.RedeemInfo, error) {
+	redeemInfo := domain.RedeemInfo{}
+
+	err := rep.db.QueryRow(context.Background(),
+		`SELECT 
+			u.balance, 
+			u.gold, 
+			u.slave_level, 
+			u.defender_level, 
+			u.fetter_time, 
+			f.duration 
+		FROM users u 
+		INNER JOIN fetter f 
+			ON f.id = u.fetter_type 
+		WHERE u.id = $1 LIMIT 1;`, userId).Scan(
+		&redeemInfo.Balance,
+		&redeemInfo.Gold,
+		&redeemInfo.SlaveLevel,
+		&redeemInfo.DefenderLevel,
+		&redeemInfo.FetterTime,
+		&redeemInfo.FetterDuration)
+
+	return redeemInfo, errors.Wrap(err, "GetRedeemInfo queryRow AuthPostgres")
+}

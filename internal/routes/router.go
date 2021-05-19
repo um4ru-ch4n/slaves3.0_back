@@ -29,6 +29,7 @@ func (r *Router) InitRoutes() *gin.Engine {
 		user.GET("/slaves", r.getSlavesList)
 		user.POST("/setjobname", r.setJobName)
 		user.POST("/buyfetter", r.updateStatsHour, r.buyFetter)
+		user.POST("/redeem", r.redeem)
 	}
 	fellow := router.Group("/fellow", r.hasAuth)
 	{
