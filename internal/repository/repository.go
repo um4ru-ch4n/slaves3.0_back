@@ -25,6 +25,7 @@ type User interface {
 	SetFetter(userId int32, fetterType string) error
 	GetFetterBuySlaveInfo(userId int32) (domain.FetterBuySlaveInfo, error)
 	GetFetterPrice(name string) (int32, error)
+	GetRedeemInfo(userId int32) (domain.RedeemInfo, error)
 }
 
 type UserMaster interface {
