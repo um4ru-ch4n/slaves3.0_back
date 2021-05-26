@@ -71,7 +71,7 @@ func GetCanBuyFetter(fetterTime time.Time, fetterDuration int32) bool {
 }
 
 func GetFetterPrice(fetterType string, fetterPrice, slaveLevel, defenderLevel int32) (int64, int32) {
-	lvl := float64(slaveLevel + defenderLevel)
+	lvl := float64(slaveLevel + defenderLevel - 1)
 
 	if fetterType == "common" {
 		priceSm := int64(math.Round((math.Pow(lvl, 2)*(math.Pow(math.Log(lvl), 3)*math.Pow(lvl, 2)/2+1) + 1) * float64(fetterPrice) / 100))
