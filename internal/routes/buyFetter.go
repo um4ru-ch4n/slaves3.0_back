@@ -10,8 +10,8 @@ import (
 )
 
 type buyFetterInfo struct {
-	SlaveId    int32  `json:"slave_id"`
-	FetterType string `json:"fetter_type"`
+	SlaveId    int32  `json:"slave_id" binding:"required"`
+	FetterType string `json:"fetter_type" binding:"required"`
 }
 
 func (r *Router) buyFetter(c *gin.Context) {
