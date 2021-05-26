@@ -204,7 +204,8 @@ func (rep *AuthPostgres) SlaveBuyUpdateInfo(newData domain.SlaveBuyUpdateInfo) e
 		`UPDATE users 
 		SET 
 			job_name = $1, 
-			user_type = (SELECT id FROM user_type WHERE name = $2)
+			user_type = (SELECT id FROM user_type WHERE name = $2),
+			fetter_time = '1971-11-03T00:00:00.0000+03:00' 
 		WHERE id = $3;`,
 		newData.JobName,
 		newData.UserType,
