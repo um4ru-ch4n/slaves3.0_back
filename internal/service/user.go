@@ -347,6 +347,10 @@ func (serv *AuthService) SaleSlave(userId int32, slaveId int32) error {
 		return errors.Wrap(err, "SaleSlave masterId != userId AuthService")
 	}
 
+	if GetHasFetter(slave.FetterTime, slave.FetterDuration) {
+		return errors.Wrap(errors.New("Can't sale slave which has fetter"), "SaleSlave hasFetter AuthService")
+	}
+
 	if err := serv.repAuth.UserBalanceUpdate(
 		userId,
 		user.Balance+GetUserSalePriceSm(slave.SlaveLevel),
