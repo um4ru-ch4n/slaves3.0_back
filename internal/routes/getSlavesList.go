@@ -15,7 +15,7 @@ func (r *Router) getSlavesList(c *gin.Context) {
 	slavesList, err := r.services.User.GetSlavesList(userVkInfo.Id)
 	if err != nil {
 		r.logger.Error("getSlavesList r.services.User.GetSlavesList Router: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+		c.JSON(http.StatusConflict, errors.Cause(err).Error())
 		return
 	}
 

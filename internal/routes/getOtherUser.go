@@ -20,7 +20,7 @@ func (r *Router) getOtherUser(c *gin.Context) {
 		userVkInfo, err := r.services.User.GetUsersVkInfo(userToken, []int32{userId})
 		if err != nil {
 			r.logger.Error("getOtherUser r.services.User.GetUsersVkInfo Router: ", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+			c.JSON(http.StatusConflict, errors.Cause(err).Error())
 			return
 		}
 
@@ -28,12 +28,12 @@ func (r *Router) getOtherUser(c *gin.Context) {
 
 		if err != nil {
 			r.logger.Error("getOtherUser r.services.User.CreateUser Router: ", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+			c.JSON(http.StatusConflict, errors.Cause(err).Error())
 			return
 		}
 	} else if err != nil {
 		r.logger.Error("getOtherUser r.services.User.GetUserFull Router: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+		c.JSON(http.StatusConflict, errors.Cause(err).Error())
 		return
 	}
 

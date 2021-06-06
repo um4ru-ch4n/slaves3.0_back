@@ -27,7 +27,7 @@ func (r *Router) buyFetter(c *gin.Context) {
 
 	if err := r.services.User.BuyFetter(userVkInfo.Id, bFInfo.SlaveId, bFInfo.FetterType); err != nil {
 		r.logger.Error("buyFetter r.services.User.BuySlave Router: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+		c.JSON(http.StatusConflict, errors.Cause(err).Error())
 		return
 	}
 

@@ -19,13 +19,13 @@ func (r *Router) getUser(c *gin.Context) {
 		userInfo, err = r.services.User.CreateUser(userVkInfo.Id, "simp", userVkInfo.Fio, userVkInfo.Photo)
 		if err != nil {
 			r.logger.Error("getUser r.services.User.CreateUser Router: ", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+			c.JSON(http.StatusConflict, errors.Cause(err).Error())
 			return
 		}
 
 	} else if err != nil {
 		r.logger.Error("getUser r.services.User.GetUserFull Router: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+		c.JSON(http.StatusConflict, errors.Cause(err).Error())
 		return
 	}
 

@@ -14,7 +14,7 @@ func (r *Router) getFriendsList(c *gin.Context) {
 	friends, err := r.services.User.GetFriendsList(token)
 	if err != nil {
 		r.logger.Error("getFriendsList r.services.User.GetFriendsList Router: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+		c.JSON(http.StatusConflict, errors.Cause(err).Error())
 		return
 	}
 

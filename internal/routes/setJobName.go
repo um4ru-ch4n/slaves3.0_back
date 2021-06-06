@@ -39,7 +39,7 @@ func (r *Router) setJobName(c *gin.Context) {
 	}
 
 	if err := r.services.User.SetJobName(userVkInfo.Id, jobName.SlaveId, trimJobName); err != nil {
-		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+		c.JSON(http.StatusConflict, errors.Cause(err).Error())
 		return
 	}
 

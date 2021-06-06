@@ -12,7 +12,7 @@ func (r *Router) getRatingSlavesCount(c *gin.Context) {
 	ratingUsers, err := r.services.User.GetRatingBySlavesCount()
 	if err != nil {
 		r.logger.Error("getRatingSlavesCount r.services.User.GetRatingBySlavesCount Router: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+		c.JSON(http.StatusConflict, errors.Cause(err).Error())
 		return
 	}
 
