@@ -22,7 +22,7 @@ func (r *Router) buySlave(c *gin.Context) {
 
 	if err := r.services.User.BuySlave(userVkInfo.Id, slaveId.SlaveId); err != nil {
 		r.logger.Error("buySlave r.services.User.BuySlave Router: ", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, errors.Cause(err).Error())
+		c.JSON(http.StatusConflict, errors.Cause(err).Error())
 		return
 	}
 
